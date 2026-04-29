@@ -1,22 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, User, ArrowRight, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { getPublicBlog } from '../api/client';
 import SEO from '../components/SEO';
 
-const BlogPost = ({ title, excerpt, created_at, author, category, image }) => (
+const BlogPost = ({ title, excerpt, created_at, author, category, image, slug }) => (
   <article className="blog-card glass-card">
-    <div className="blog-image-placeholder" style={image ? { backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
-      <span className="blog-category">{category}</span>
-    </div>
-    <div className="blog-content">
-      <div className="blog-meta">
-        <span><Calendar size={14} /> {new Date(created_at).toLocaleDateString()}</span>
-        <span><User size={14} /> {author}</span>
+    <Link to={`/blog/${slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <div className="blog-image-placeholder" style={image ? { backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+        <span className="blog-category">{category}</span>
       </div>
-      <h3>{title}</h3>
-      <p>{excerpt}</p>
-      <button className="btn-text">Read More <ArrowRight size={16} /></button>
-    </div>
+      <div className="blog-content">
+        <div className="blog-meta">
+          <span><Calendar size={14} /> {new Date(created_at).toLocaleDateString()}</span>
+          <span><User size={14} /> {author}</span>
+        </div>
+        <h3>{title}</h3>
+        <p>{excerpt}</p>
+        <div className="btn-text" style={{ color: '#00b37a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem' }}>
+          Read More <ArrowRight size={16} />
+        </div>
+      </div>
+    </Link>
   </article>
 );
 

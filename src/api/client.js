@@ -58,9 +58,16 @@ export const saveContent    = (token, page, section, data) => request('POST', '/
 // ── Projects ──────────────────────────────────────────────────────────────
 export const getProjects    = () => request('GET', '/projects');
 export const getProjectCategories = () => request('GET', '/projects/categories');
-export const createProject  = (token, data) => request('POST', '/projects', data, token);
-export const updateProject  = (token, id, data) => request('PUT', `/projects/${id}`, data, token);
+export const createProject  = (token, p) => request('POST', '/projects', p, token);
+export const updateProject  = (token, id, p) => request('PUT', `/projects/${id}`, p, token);
 export const deleteProject  = (token, id) => request('DELETE', `/projects/${id}`, null, token);
+
+// Services
+export const getServices    = () => request('GET', '/services');
+export const getServiceBySlug = (slug) => request('GET', `/services/${slug}`);
+export const createService   = (token, s) => request('POST', '/services', s, token);
+export const updateService   = (token, id, s) => request('PUT', `/services/${id}`, s, token);
+export const deleteService   = (token, id) => request('DELETE', `/services/${id}`, null, token);
 
 // ── Brands ──────────────────────────────────────────────────────────────
 export const getBrands      = () => request('GET', '/brands');

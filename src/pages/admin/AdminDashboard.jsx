@@ -6,6 +6,7 @@ import TeamManager   from './panels/TeamManager';
 import InquiriesPanel from './panels/InquiriesPanel';
 import PageEditor     from './panels/PageEditor';
 import ProjectManager from './panels/ProjectManager';
+import ServicesManager from './panels/ServicesManager';
 import BrandManager   from './panels/BrandManager';
 import ClientManager  from './panels/ClientManager';
 import {
@@ -103,6 +104,7 @@ const AdminDashboard = ({ token, admin, onLogout }) => {
     blog:      <BlogManager token={token}/>,
     team:      <TeamManager token={token}/>,
     projects:  <ProjectManager token={token}/>,
+    services:  <ServicesManager token={token}/>,
     brands:    <BrandManager token={token}/>,
     clients:   <ClientManager token={token}/>,
     pages:     <PageEditor token={token}/>,

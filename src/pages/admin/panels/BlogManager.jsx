@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getBlogPosts, createPost, updatePost, deletePost, uploadImage } from '../../../api/client';
-import { Plus, Edit2, Trash2, Save, X, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, Loader2, Eye, EyeOff, Image as ImageIcon, FileText } from 'lucide-react';
 import { useToast } from '../../../components/Toast';
 
 const EMPTY = { title: '', slug: '', excerpt: '', body: '', image: '', category: 'General', tags: '', status: 'draft', author: 'Hexagon Team' };
@@ -26,14 +26,30 @@ const BlogManager = ({ token }) => {
 
   const load = async () => {
     setLoading(true);
-    try { const r = await getBlogPosts(token, { limit: 50 }); setPosts(r.posts); setTotal(r.total); }
-    catch {} finally { setLoading(false); }
+    try { 
+      const r = await getBlogPosts(token, { limit: 50 }); 
+      setPosts(r.posts || []); 
+      setTotal(r.total || 0); 
+    }
+    catch (e) {
+      console.error('Failed to load blog posts:', e);
+      addToast('Failed to load posts', 'error');
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   useEffect(() => { load(); }, []);
 
-  const openNew  = () => { setForm(EMPTY); setEditing('new'); };
-  const openEdit = (p) => { setForm({ ...p, tags: (p.tags || []).join(', ') }); setEditing(p.id); };
+  const openNew  = () => { 
+    console.log('Opening new post form');
+    setForm({ ...EMPTY }); 
+    setEditing('new'); 
+  };
+  const openEdit = (p) => { 
+    setForm({ ...p, tags: Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || '') }); 
+    setEditing(p.id); 
+  };
   const cancel   = () => { setEditing(null); setMsg(''); };
 
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
@@ -65,7 +81,7 @@ const BlogManager = ({ token }) => {
       await deletePost(token, deleteConfirm);
       addToast('Post deleted', 'success');
       setDeleteConfirm(null);
-      load();
+      await load();
     } catch (e) { addToast('Delete failed: ' + e.message, 'error'); }
   };
 
@@ -102,7 +118,7 @@ const BlogManager = ({ token }) => {
         {form.image && (
           <div style={{ marginBottom: '0.5rem' }}>
             <img 
-              src={form.image.startsWith('http') ? form.image : (form.image.startsWith('/images') ? form.image : `http://localhost:5000${form.image}`)} 
+              src={form.image} 
               alt="Preview" 
               style={{ maxHeight: 100, borderRadius: '0.4rem', border: '1px solid #e5e7eb' }} 
             />
@@ -154,13 +170,32 @@ const BlogManager = ({ token }) => {
     <div style={{ padding: '2rem', overflowY: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <h2 style={{ color: '#111827', margin: 0 }}>Blog Posts <span style={{ color: '#6b7280', fontSize: '1rem' }}>({total})</span></h2>
-        <button onClick={openNew} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#111827', fontWeight: 600, cursor: 'pointer' }}>
+        <button 
+          type="button"
+          onClick={openNew} 
+          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#ffffff', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+        >
           <Plus size={16} /> New Post
         </button>
       </div>
 
       {loading ? <div style={{ color: '#6b7280', textAlign: 'center', padding: '3rem' }}>Loading…</div> :
-        posts.length === 0 ? <div style={{ color: '#6b7280', textAlign: 'center', padding: '3rem', background: '#ffffff', borderRadius: '0.75rem' }}>No posts yet. Create your first post!</div> :
+        !posts || posts.length === 0 ? (
+          <div style={{ color: '#6b7280', textAlign: 'center', padding: '4rem 2rem', background: '#ffffff', borderRadius: '0.75rem', border: '1px dashed #e5e7eb', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <FileText size={40} style={{ opacity: 0.2 }} />
+            <div>
+              <div style={{ fontWeight: 600, color: '#111827', fontSize: '1.1rem' }}>No posts yet</div>
+              <p style={{ margin: '0.25rem 0 1rem', fontSize: '0.9rem' }}>Create your first blog post to get started!</p>
+            </div>
+            <button 
+              type="button"
+              onClick={openNew} 
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#ffffff', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+            >
+              <Plus size={16} /> Create First Post
+            </button>
+          </div>
+        ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {posts.map(p => {
             const s = statusBadge(p.status);
@@ -168,7 +203,7 @@ const BlogManager = ({ token }) => {
               <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.9rem 1.1rem', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.6rem' }}>
                 {p.image && (
                   <img 
-                    src={p.image.startsWith('http') ? p.image : (p.image.startsWith('/images') ? p.image : `http://localhost:5000${p.image}`)} 
+                    src={p.image} 
                     alt="" 
                     style={{ width: 56, height: 42, objectFit: 'cover', borderRadius: '0.4rem', flexShrink: 0 }} 
                   />
@@ -189,7 +224,7 @@ const BlogManager = ({ token }) => {
             );
           })}
         </div>
-      }
+      )}
 
       {deleteConfirm && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(17, 24, 39, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>

@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Services from './pages/Services';
 import Projects from './pages/Projects';
 import Blog from './pages/Blog';
+import BlogDetail from './pages/BlogDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Clients from './pages/Clients';
@@ -40,6 +41,7 @@ function App() {
           <Route path="/services/:serviceId" element={<PublicLayout><Services /></PublicLayout>} />
           <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
           <Route path="/projects" element={<PublicLayout><Projects /></PublicLayout>} />
+          <Route path="/blog/:slug" element={<PublicLayout><BlogDetail /></PublicLayout>} />
           <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
           <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
           <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />

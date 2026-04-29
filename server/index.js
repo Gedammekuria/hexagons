@@ -15,6 +15,7 @@ import projectRoutes from './src/routes/projects.js';
 import aiRoutes from './src/routes/ai.js';
 import brandsRoutes from './src/routes/brands.js';
 import clientsRoutes from './src/routes/clients.js';
+import servicesRoutes from './src/routes/services.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -30,16 +31,6 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: 'Too many requests, please try again later.' }
-});
-
-app.use('/api/', limiter);
-
 app.use(cors({
   origin: function (origin, callback) {
     const allowed = [
@@ -48,7 +39,8 @@ app.use(cors({
       'http://localhost:5174', 
       'http://localhost:5175',
       'http://127.0.0.1:5173',
-      'http://127.0.0.1:5174'
+      'http://127.0.0.1:5174',
+      'http://127.0.0.1:5175'
     ];
     if (!origin || allowed.includes(origin) || origin.includes('localhost:') || origin.includes('127.0.0.1:') || origin.includes('vercel.app')) {
       callback(null, true);
@@ -59,6 +51,16 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
 }));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // increased from 100 for dev environment
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many requests, please try again later.' }
+});
+
+app.use('/api/', limiter);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -76,6 +78,7 @@ app.use('/api/projects',  projectRoutes);
 app.use('/api/ai',        aiRoutes);
 app.use('/api/brands',    brandsRoutes);
 app.use('/api/clients',   clientsRoutes);
+app.use('/api/services',  servicesRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Serve frontend static files in production
