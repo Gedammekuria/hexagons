@@ -1,0 +1,147 @@
+import React, { useState, useEffect } from 'react';
+import { getSettings, saveSettings, changePassword } from '../../../api/client';
+import { Save, Loader2, Lock, ShieldCheck } from 'lucide-react';
+
+const field = (label, key, val, onChange, type = 'text') => (
+  <div key={key} style={{ marginBottom: '1rem' }}>
+    <label style={{ display: 'block', color: '#6b7280', fontSize: '0.8rem', marginBottom: '0.3rem' }}>{label}</label>
+    <input type={type} value={val || ''} onChange={e => onChange(key, e.target.value)}
+      style={{ width: '100%', boxSizing: 'border-box', padding: '0.7rem 0.9rem', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.5rem', color: '#111827', fontSize: '0.9rem', outline: 'none' }} />
+  </div>
+);
+
+const SiteSettings = ({ token }) => {
+  const [data, setData]       = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving]   = useState(false);
+  const [msg, setMsg]         = useState('');
+  const [pass, setPass]       = useState({ current: '', next: '', confirm: '' });
+  const [passMsg, setPassMsg] = useState({ text: '', type: '' });
+  const [passLoading, setPassLoading] = useState(false);
+
+  useEffect(() => {
+    getSettings(token).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
+  }, [token]);
+
+  const set = (k, v) => setData(prev => ({ ...prev, [k]: v }));
+
+  const save = async () => {
+    setSaving(true); setMsg('');
+    try { await saveSettings(token, data); setMsg('Saved!'); setTimeout(() => setMsg(''), 3000); }
+    catch (e) { setMsg('Error: ' + e.message); }
+    finally { setSaving(false); }
+  };
+
+  const updatePassword = async () => {
+    if (!pass.current || !pass.next) return setPassMsg({ text: 'All fields required', type: 'error' });
+    if (pass.next !== pass.confirm) return setPassMsg({ text: 'Passwords do not match', type: 'error' });
+    if (pass.next.length < 6) return setPassMsg({ text: 'New password too short', type: 'error' });
+
+    setPassLoading(true); setPassMsg({ text: '', type: '' });
+    try {
+      await changePassword(token, pass.current, pass.next);
+      setPassMsg({ text: 'Password updated successfully!', type: 'success' });
+      setPass({ current: '', next: '', confirm: '' });
+    } catch (e) {
+      setPassMsg({ text: e.message || 'Error updating password', type: 'error' });
+    } finally {
+      setPassLoading(false);
+    }
+  };
+
+  if (loading) return <div style={{ color: '#6b7280', padding: '3rem', textAlign: 'center' }}>Loading…</div>;
+
+  const section = (title, children) => (
+    <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.75rem', padding: '1.25rem', marginBottom: '1.25rem' }}>
+      <h3 style={{ color: '#111827', margin: '0 0 1rem', fontSize: '0.95rem', fontWeight: 600 }}>{title}</h3>
+      {children}
+    </div>
+  );
+
+  return (
+    <div style={{ padding: '2rem', overflowY: 'auto', maxWidth: 700 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+        <h2 style={{ color: '#111827', margin: 0 }}>Site Settings</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {msg && <span style={{ color: msg.startsWith('Error') ? '#f87171' : '#4ade80', fontSize: '0.85rem' }}>{msg}</span>}
+          <button onClick={save} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#111827', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
+            {saving ? <Loader2 size={15} /> : <Save size={15} />} {saving ? 'Saving…' : 'Save All'}
+          </button>
+        </div>
+      </div>
+
+      {section('Company Info', <>
+        {field('Company Name', 'company_name', data.company_name, set)}
+        {field('Tagline', 'company_tagline', data.company_tagline, set)}
+        {field('Founded Year', 'founded_year', data.founded_year, set)}
+        {field('Working Hours', 'working_hours', data.working_hours, set)}
+      </>)}
+
+      {section('Contact Details', <>
+        {field('Phone Number', 'phone', data.phone, set, 'tel')}
+        {field('Email Address', 'email', data.email, set, 'email')}
+        {field('Address', 'address', data.address, set)}
+        {field('P.O. Box', 'po_box', data.po_box, set)}
+        {field('WhatsApp Number', 'whatsapp', data.whatsapp, set)}
+      </>)}
+
+      {section('Statistics', <>
+        {field('Years of Experience', 'experience_years', data.experience_years, set)}
+        {field('Software Projects', 'software_projects', data.software_projects, set)}
+        {field('Network Projects', 'network_projects', data.network_projects, set)}
+        {field('Employees', 'employees', data.employees, set)}
+      </>)}
+
+      {section('Social Media Links', <>
+        {field('Facebook URL', 'facebook', data.facebook, set, 'url')}
+        {field('LinkedIn URL', 'linkedin', data.linkedin, set, 'url')}
+        {field('Twitter/X URL', 'twitter', data.twitter, set, 'url')}
+        {field('Instagram URL', 'instagram', data.instagram, set, 'url')}
+        {field('Telegram URL', 'telegram', data.telegram, set, 'url')}
+      </>)}
+
+      {section('Security', <>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#6b7280' }}>
+          <Lock size={16} />
+          <span style={{ fontSize: '0.85rem' }}>Change Admin Password</span>
+        </div>
+        
+        {field('Current Password', 'current', pass.current, (k, v) => setPass(p => ({ ...p, current: v })), 'password')}
+        {field('New Password', 'next', pass.next, (k, v) => setPass(p => ({ ...p, next: v })), 'password')}
+        {field('Confirm New Password', 'confirm', pass.confirm, (k, v) => setPass(p => ({ ...p, confirm: v })), 'password')}
+        
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.5rem' }}>
+          {passMsg.text && (
+            <span style={{ fontSize: '0.82rem', color: passMsg.type === 'error' ? '#ef4444' : '#10b981', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              {passMsg.type === 'success' && <ShieldCheck size={14} />} {passMsg.text}
+            </span>
+          )}
+          <button 
+            onClick={updatePassword} 
+            disabled={passLoading}
+            style={{ 
+              marginLeft: 'auto',
+              padding: '0.6rem 1.2rem', 
+              background: '#111827', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '0.5rem', 
+              fontWeight: 600, 
+              cursor: 'pointer', 
+              fontSize: '0.85rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            {passLoading ? <Loader2 size={14} className="animate-spin" /> : <Lock size={14} />}
+            Change Password
+          </button>
+        </div>
+      </>)}
+    </div>
+  );
+};
+
+export default SiteSettings;
+
