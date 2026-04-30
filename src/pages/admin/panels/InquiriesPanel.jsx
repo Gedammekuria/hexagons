@@ -9,6 +9,8 @@ const STATUS = {
   finished:      { bg: 'rgba(167,139,250,0.15)', color: '#a78bfa' },
 };
 
+const ALL_STATUSES = ['new', 'accepted', 'in progress', 'working', 'finished'];
+
 const Badge = ({ s }) => { 
   const newStyle = { bg: 'rgba(59,130,246,0.15)', color: '#60a5fa' };
   const c = STATUS[s] || (s === 'new' ? newStyle : { bg: 'rgba(100,116,139,0.15)', color: '#94a3b8' }); 
@@ -47,10 +49,16 @@ const InquiriesPanel = ({ token }) => {
     try { const d = await getInquiry(token, id); setSel(d); setView('detail'); loadStats(); } catch {}
   };
 
-  const changeStatus = async (id, s) => {
-    await updateStatus(token, id, s);
-    setSel(prev => prev ? { ...prev, status: s } : prev);
-    load(); loadStats();
+  const changeStatus = async (id, s, e) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    try {
+      await updateStatus(token, id, s);
+      setSel(prev => prev ? { ...prev, status: s } : prev);
+      setItems(prev => prev.map(item => item.id === id ? { ...item, status: s } : item));
+      loadStats();
+    } catch (err) {
+      console.error('Status update failed:', err);
+    }
   };
 
   const del = async (id) => {
@@ -180,10 +188,11 @@ const InquiriesPanel = ({ token }) => {
                 <td style={{ padding: '0.75rem 0.9rem' }} onClick={e => e.stopPropagation()}>
                   <select 
                     value={q.status} 
-                    onChange={(e) => changeStatus(q.id, e.target.value)}
-                    style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', borderRadius: '0.4rem', border: '1px solid #e5e7eb', outline: 'none', cursor: 'pointer', background: '#f9fafb' }}
+                    onChange={(e) => changeStatus(q.id, e.target.value, e)}
+                    onClick={e => e.stopPropagation()}
+                    style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', borderRadius: '0.4rem', border: '1px solid #e5e7eb', outline: 'none', cursor: 'pointer', background: '#f9fafb', color: '#111827' }}
                   >
-                    {Object.keys(STATUS).map(s => <option key={s} value={s}>{s}</option>)}
+                    {ALL_STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
                   </select>
                 </td>
                 <td style={{ padding: '0.75rem 0.9rem' }} onClick={e => e.stopPropagation()}>
