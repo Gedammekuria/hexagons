@@ -1,13 +1,18 @@
 import pg from 'pg';
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
+import { Pool as NeonPool, neonConfig } from '@neondatabase/serverless';
+import ws from 'ws';
 
-const { Pool } = pg;
+neonConfig.webSocketConstructor = ws; // required for Node.js environments
 
-// Use individual env vars or a single connection string
-const pool = process.env.DATABASE_URL 
-  ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
-  : new Pool({
+// Use Neon Pool for Neon DBs (to bypass port 5432 blocks by using WebSockets over port 443)
+// Otherwise use standard pg Pool for local DB
+const isNeon = process.env.DATABASE_URL && process.env.DATABASE_URL.includes('neon.tech');
+
+const pool = isNeon
+  ? new NeonPool({ connectionString: process.env.DATABASE_URL })
+  : new pg.Pool({
       host: process.env.PGHOST || 'localhost',
       user: process.env.PGUSER || 'postgres',
       password: process.env.PGPASSWORD || 'postgres',

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useSettings } from '../context/SettingsContext';
 
 const Preloader = () => {
+  const { settings } = useSettings();
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(true);
 
@@ -23,6 +25,10 @@ const Preloader = () => {
 
   if (!visible) return null;
 
+  const companyName = settings?.company_name || 'Hexagon Computer Systems';
+  const firstWord = companyName.split(' ')[0];
+  const restOfName = companyName.substring(firstWord.length).trim();
+
   return (
     <div className={`preloader-overlay ${!loading ? 'fade-out' : ''}`}>
       <div className="preloader-content">
@@ -35,9 +41,9 @@ const Preloader = () => {
         
         <div className="preloader-text">
           <p className="welcome-text">WELCOME TO</p>
-          <h1 className="brand-name">
-            <span className="hexagon-text">HEXAGON</span>
-            <span className="systems-text">SYSTEMS</span>
+          <h1 className="brand-name" style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+            <span className="hexagon-text" style={{ color: 'var(--primary)', WebkitTextFillColor: 'initial' }}>{firstWord}</span>
+            <span className="systems-text">{restOfName}</span>
           </h1>
           <div className="loading-bar-container">
             <div className="loading-bar-progress"></div>

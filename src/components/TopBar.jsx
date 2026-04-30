@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Phone, Mail, Clock } from 'lucide-react';
 import { FacebookIcon, InstagramIcon, TelegramIcon, TikTokIcon, XIcon, LinkedInIcon } from './BrandIcons';
+import { useSettings } from '../context/SettingsContext';
 
 const TopBar = () => {
+  const { settings } = useSettings();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -30,23 +32,27 @@ const TopBar = () => {
       <div className="container">
         <div className="top-bar-content">
           <div className="contact-info">
-            <a href="tel:+251944161572" className="info-item">
-              <Phone size={14} />
-              <span>+251-944161572</span>
-            </a>
-            <a href="mailto:info@hexagonview.com" className="info-item">
-              <Mail size={14} />
-              <span>info@hexagonview.com</span>
-            </a>
+            {settings?.phone && (
+              <a href={`tel:${settings.phone}`} className="info-item">
+                <Phone size={14} />
+                <span>{settings.phone}</span>
+              </a>
+            )}
+            {settings?.email && (
+              <a href={`mailto:${settings.email}`} className="info-item">
+                <Mail size={14} />
+                <span>{settings.email}</span>
+              </a>
+            )}
           </div>
           <div className="top-bar-right">
             <div className="social-links">
-              <a href="#" title="Facebook"><FacebookIcon size={14} /></a>
-              <a href="#" title="X (Twitter)"><XIcon size={14} /></a>
-              <a href="#" title="Instagram"><InstagramIcon size={14} /></a>
-              <a href="#" title="TikTok"><TikTokIcon size={14} /></a>
-              <a href="#" title="Telegram"><TelegramIcon size={14} /></a>
-              <a href="#" title="LinkedIn"><LinkedInIcon size={14} /></a>
+              {settings?.facebook && <a href={settings.facebook} target="_blank" rel="noopener noreferrer" title="Facebook"><FacebookIcon size={14} /></a>}
+              {settings?.twitter && <a href={settings.twitter} target="_blank" rel="noopener noreferrer" title="X (Twitter)"><XIcon size={14} /></a>}
+              {settings?.instagram && <a href={settings.instagram} target="_blank" rel="noopener noreferrer" title="Instagram"><InstagramIcon size={14} /></a>}
+              {settings?.telegram && <a href={settings.telegram} target="_blank" rel="noopener noreferrer" title="Telegram"><TelegramIcon size={14} /></a>}
+              {settings?.linkedin && <a href={settings.linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn"><LinkedInIcon size={14} /></a>}
+              {settings?.tiktok && <a href={settings.tiktok} target="_blank" rel="noopener noreferrer" title="TikTok"><TikTokIcon size={14} /></a>}
             </div>
             <div className="live-clock">
               <Clock size={12} className="text-accent" />

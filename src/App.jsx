@@ -16,6 +16,7 @@ import ScrollToTop from './components/ScrollToTop';
 import FloatingActions from './components/FloatingActions';
 import Preloader from './components/Preloader';
 import { ToastProvider } from './components/Toast';
+import { SettingsProvider } from './context/SettingsContext';
 
 const PublicLayout = ({ children }) => (
   <div className="app">
@@ -31,9 +32,10 @@ const PublicLayout = ({ children }) => (
 
 function App() {
   return (
-    <ToastProvider>
-      <Router>
-        <Routes>
+    <SettingsProvider>
+      <ToastProvider>
+        <Router>
+          <Routes>
           <Route path="/admin/*" element={<Admin />} />
           <Route path="/login" element={<Admin />} />
           
@@ -51,6 +53,7 @@ function App() {
         </Routes>
       </Router>
     </ToastProvider>
+    </SettingsProvider>
   );
 }
 

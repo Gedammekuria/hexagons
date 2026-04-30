@@ -17,9 +17,6 @@ const BlogPost = ({ title, excerpt, created_at, author, category, image, slug })
         </div>
         <h3>{title}</h3>
         <p>{excerpt}</p>
-        <div className="btn-text" style={{ color: '#00b37a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem' }}>
-          Read More <ArrowRight size={16} />
-        </div>
       </div>
     </Link>
   </article>

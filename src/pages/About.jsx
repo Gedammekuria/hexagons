@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Target, Eye, BookMarked, Zap, Users, Scale, Lock, Handshake, Monitor, Network, Code, Database, Globe, Play, Pause, Quote } from 'lucide-react';
 import { getContent } from '../api/client';
 import SEO from '../components/SEO';
+import { useSettings } from '../context/SettingsContext';
 
 const About = () => {
+  const { settings } = useSettings();
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef(null);
 
@@ -30,7 +32,7 @@ const About = () => {
     <div className="about-page">
       <SEO 
         title="About Us" 
-        description="Learn about Hexagon Computer Systems, founded in 2009. Our mission is to provide quality IT and communication consulting to businesses in Ethiopia." 
+        description={`Learn about ${settings?.company_name || 'Hexagon Computer Systems'}, founded in ${settings?.founded_year || '2009'}. Our mission is to provide quality IT and communication consulting to businesses in Ethiopia.`} 
       />
       <div className="container">
         <header className="page-header center">
@@ -38,11 +40,14 @@ const About = () => {
         </header>
         <section className="about-content grid-2">
           <div className="about-text animate-fade-in">
-            <span className="badge">15+ Years in Business</span>
+            <span className="badge">{settings?.experience_years || '15+'} Years in Business</span>
             <p>
-              {story?.paragraph1 || `Hexagon Computer Systems is a 15 years old technology company established in 2009.
+              {(story?.paragraph1 || `Hexagon Computer Systems is a ${settings?.experience_years || '15+'} years old technology company established in ${settings?.founded_year || '2009'}.
               With a team of well-equipped professionals, we endeavor to provide high level technology
-              support to our clients.`}
+              support to our clients.`)
+                .replace(/\b(19|20)\d{2}\b/g, settings?.founded_year || '2009')
+                .replace(/\b\d+\+?\s+years?\b/gi, `${settings?.experience_years || '15+'} years`)
+                .replace(/Hexagon Computer Systems/gi, settings?.company_name || 'Hexagon Computer Systems')}
             </p>
             <p>
               {story?.paragraph2 || `Our team of professionals, sharing knowledge and working together, chose the symbol of
@@ -53,7 +58,7 @@ const About = () => {
             {!story && (
               <>
                 <p>
-                  Hexagon Computer Systems has been formed by a group of professionals having vivid
+                  {settings?.company_name || 'Hexagon Computer Systems'} has been formed by a group of professionals having vivid
                   experience and wide exposure in Information Technology and Business. People involved
                   here are young qualified business graduates and qualified engineers from the renowned
                   universities across the country.
@@ -74,15 +79,15 @@ const About = () => {
             </p>
             <div className="about-stats">
               <div className="mini-stat">
-                <h3>2009</h3>
+                <h3>{settings?.founded_year || "2009"}</h3>
                 <p>Founded</p>
               </div>
               <div className="mini-stat">
-                <h3>Ethiopia</h3>
-                <p>Headquarters</p>
+                <h3>{settings?.experience_years || "15+"}</h3>
+                <p>Years Experience</p>
               </div>
               <div className="mini-stat">
-                <h3>50+</h3>
+                <h3>{settings?.employees || "50+"}</h3>
                 <p>Employees</p>
               </div>
             </div>
@@ -99,9 +104,11 @@ const About = () => {
             <h2>{founder?.title || "Founder's Statement"}</h2>
             <div className="section-divider"></div>
             <p>
-              {founder?.text1 || `Ephrem Abreha is the visionary behind Hexagon Computer Systems.
-              With over 15 years of industry leadership, Ephrem founded Hexagon with a goal to
-              revolutionize the Ethiopian technology landscape.`}
+              {(founder?.text1 || `Ephrem Abreha is the visionary behind Hexagon Computer Systems.
+              With over ${settings?.experience_years || '15+'} years of industry leadership, Ephrem founded Hexagon with a goal to
+              revolutionize the Ethiopian technology landscape.`)
+                .replace(/\b\d+\+?\s+years?\b/gi, `${settings?.experience_years || '15+'} years`)
+                .replace(/Hexagon Computer Systems/gi, settings?.company_name || 'Hexagon Computer Systems')}
             </p>
             <p>
               {founder?.text2 || `His commitment to building humble, supportive, and trustworthy engineering teams

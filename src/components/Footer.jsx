@@ -1,9 +1,12 @@
 import React from 'react';
-import { Phone, Mail, MapPin } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FacebookIcon, InstagramIcon, TelegramIcon, TikTokIcon, XIcon, LinkedInIcon } from './BrandIcons';
+import { useSettings } from '../context/SettingsContext';
 
 const Footer = () => {
+  const { settings } = useSettings();
+
   return (
     <footer className="footer">
       <div className="container">
@@ -13,15 +16,15 @@ const Footer = () => {
               <img src="/images/hexagon-logo.png" alt="Hexagon Logo" className="footer-logo-img" />
             </Link>
             <p className="footer-desc">
-              Building reliable technology solutions since 2009. From Addis Ababa to the world.
+              {settings?.company_tagline || "Building reliable technology solutions since 2009. From Addis Ababa to the world."}
             </p>
             <div className="footer-social-links">
-              <a href="#" title="Facebook"><FacebookIcon size={18} /></a>
-              <a href="#" title="X (Twitter)"><XIcon size={18} /></a>
-              <a href="#" title="Instagram"><InstagramIcon size={18} /></a>
-              <a href="#" title="TikTok"><TikTokIcon size={18} /></a>
-              <a href="#" title="Telegram"><TelegramIcon size={18} /></a>
-              <a href="#" title="LinkedIn"><LinkedInIcon size={18} /></a>
+              {settings?.facebook && <a href={settings.facebook} target="_blank" rel="noopener noreferrer" title="Facebook"><FacebookIcon size={18} /></a>}
+              {settings?.twitter && <a href={settings.twitter} target="_blank" rel="noopener noreferrer" title="X (Twitter)"><XIcon size={18} /></a>}
+              {settings?.instagram && <a href={settings.instagram} target="_blank" rel="noopener noreferrer" title="Instagram"><InstagramIcon size={18} /></a>}
+              {settings?.telegram && <a href={settings.telegram} target="_blank" rel="noopener noreferrer" title="Telegram"><TelegramIcon size={18} /></a>}
+              {settings?.linkedin && <a href={settings.linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn"><LinkedInIcon size={18} /></a>}
+              {settings?.tiktok && <a href={settings.tiktok} target="_blank" rel="noopener noreferrer" title="TikTok"><TikTokIcon size={18} /></a>}
             </div>
           </div>
 
@@ -54,23 +57,30 @@ const Footer = () => {
             <h4>Contact Info</h4>
             <div className="footer-contact-item">
               <Phone size={16} className="text-primary" />
-              <span>+251-944161572</span>
+              <span>{settings?.phone || "+251-944161572"}</span>
             </div>
             <div className="footer-contact-item">
               <Mail size={16} className="text-primary" />
-              <span>info@hexagonview.com</span>
+              <span>{settings?.email || "info@hexagonview.com"}</span>
             </div>
             <div className="footer-contact-item" style={{ alignItems: 'flex-start' }}>
               <MapPin size={16} className="text-primary" style={{ marginTop: '4px' }} />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span>22 Mazoriya, MAF Bldg, #402</span>
-                <span style={{ fontSize: '0.8rem', opacity: 0.8, marginTop: '2px' }}>P.O. Box: 15,444, Addis Ababa, Ethiopia</span>
+                <span>{settings?.address || "22 Mazoriya, MAF Bldg, #402"}</span>
+                {settings?.po_box && <span style={{ fontSize: '0.8rem', opacity: 0.8, marginTop: '2px' }}>{settings.po_box}</span>}
+              </div>
+            </div>
+            <div className="footer-contact-item" style={{ alignItems: 'flex-start' }}>
+              <Clock size={16} className="text-primary" style={{ marginTop: '4px' }} />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span>Working Hours</span>
+                <span style={{ fontSize: '0.8rem', opacity: 0.8, marginTop: '2px' }}>{settings?.working_hours || "Mon – Fri: 8:00 AM – 6:00 PM"}</span>
               </div>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; {new Date().getFullYear()} Hexagon Computer Systems. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {settings?.company_name || "Hexagon Computer Systems"}. All rights reserved.</p>
         </div>
       </div>
     </footer>

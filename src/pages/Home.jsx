@@ -6,6 +6,7 @@ import SEO from '../components/SEO';
 import Procedures from './Procedures';
 import Team from './Team';
 import Partners from '../components/Partners';
+import { useSettings } from '../context/SettingsContext';
 
 const ProjectCard = ({ title, category, description, tags, image, link, show_link, icon: Icon }) => (
   <div className="glass-card project-card animate-fade-in">
@@ -41,6 +42,7 @@ const ProjectCard = ({ title, category, description, tags, image, link, show_lin
 );
 
 const Home = () => {
+  const { settings } = useSettings();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const location = useLocation();
@@ -154,18 +156,14 @@ const Home = () => {
     { title: "Local Technical Support & Migration", icon: Database }
   ];
 
-  const stats = [
-    { label: 'Years of Experience', value: '15+', icon: <Layout className="text-secondary" /> },
-    { label: 'Website & Software Projects', value: '250+', icon: <Code className="text-primary" /> },
-    { label: 'Network & Security Projects', value: '180+', icon: <Shield className="text-accent" /> },
-  ];
-
   const heroSlides = [
     { title: "Empowering Ethiopia's Digital Future", subtitle: "Hexagon Computer Systems delivers cutting-edge IT solutions.", image: "/images/it-support.png", link: "/services/it-support" },
     { title: "Enterprise Networking Solutions", subtitle: "Building robust, scalable, and secure network infrastructures.", image: "/images/networking.png", link: "/services/networking" },
     { title: "Advanced Security & Surveillance", subtitle: "State-of-the-art physical and digital security solutions.", image: "/images/security.png", link: "/services/security" },
+    { title: "Comprehensive Cybersecurity", subtitle: "Protecting your digital assets with world-class security solutions.", image: "/images/cybersecurity.png", link: "/services/cybersecurity" },
     { title: "Digital Marketing & Graphics", subtitle: "Creative design and strategic marketing solutions.", image: "/images/digital-marketing.png", link: "/services/marketing-graphics" },
-    { title: "Bespoke Software Development", subtitle: "Transforming your business vision into high-performance digital products.", image: "/images/digital-services.png", link: "/services/digital-services" }
+    { title: "Bespoke Software Development", subtitle: "Transforming your business vision into high-performance digital products.", image: "/images/digital-services.png", link: "/services/digital-services" },
+    { title: "Reliable Web Hosting & Domains", subtitle: "Secure hosting with enterprise-grade performance and local support.", image: "/images/networking.png", link: "/services/web-hosting" }
   ];
 
   useEffect(() => {
@@ -229,23 +227,28 @@ const Home = () => {
             <button className="arrow-btn next" onClick={nextSlide}><ChevronRight size={24} /></button>
           </div>
         </div>
-      </section>
-
-      <div className="container">
-        <div className="stats-grid">
-          {stats.map((stat, i) => (
-            <div key={i} className="stat-item glass-card animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-              <div className="stat-icon">{stat.icon}</div>
-              <div className="stat-content">
-                <div className="stat-value">{stat.value}</div>
-                <p className="stat-label">{stat.label}</p>
-              </div>
-            </div>
+        <div className="hero-dots" style={{ position: 'absolute', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '0.75rem', zIndex: 10 }}>
+          {heroSlides.map((_, idx) => (
+            <button 
+              key={idx} 
+              onClick={() => setCurrentSlide(idx)}
+              style={{
+                width: idx === currentSlide ? '2rem' : '0.6rem',
+                height: '0.6rem',
+                borderRadius: '1rem',
+                background: idx === currentSlide ? '#00b37a' : 'rgba(255,255,255,0.4)',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
           ))}
         </div>
-      </div>
+      </section>
 
-      <section className="overview-section section-padding">
+      <section className="overview-section section-padding" style={{ marginTop: '-3rem' }}>
         <div className="container">
           <h2 className="section-title">Company Overview</h2>
           <div className="overview-cards-grid">
@@ -253,37 +256,37 @@ const Home = () => {
               <div className="overview-number">01</div>
               <Globe className="text-primary" size={40} />
               <h3>{overview?.card1_title || "Founded"}</h3>
-              <p>{overview?.card1_text || "Established in 2009."}</p>
+              <p>{(overview?.card1_text || `Established in 2009.`).replace(/\b(19|20)\d{2}\b/g, settings?.founded_year || '2009')}</p>
             </div>
             <div className="overview-item">
               <div className="overview-number">02</div>
               <MapPin className="text-secondary" size={40} />
               <h3>{overview?.card2_title || "Our Office"}</h3>
-              <p>{overview?.card2_text || "22 Mazoriya, MAF Bldg."}</p>
+              <p>{overview?.card2_text || settings?.address || "22 Mazoriya, MAF Bldg."}</p>
             </div>
             <div className="overview-item">
               <div className="overview-number">03</div>
               <Briefcase className="text-accent" size={40} />
               <h3>{overview?.card3_title || "Experience"}</h3>
-              <p>{overview?.card3_text || "15+ Years of industry leadership."}</p>
+              <p>{(overview?.card3_text || "15+ Years of industry leadership.").replace(/\b\d+\+?\s*[Yy]ears?\b/g, `${settings?.experience_years || '15+'} Years`)}</p>
             </div>
             <div className="overview-item">
               <div className="overview-number">04</div>
               <Code className="text-primary" size={40} />
               <h3>Website & Software Projects</h3>
-              <p>250+ Successfully delivered.</p>
+              <p>{settings?.software_projects || '250+'} Successfully delivered.</p>
             </div>
             <div className="overview-item">
               <div className="overview-number">05</div>
               <Shield className="text-secondary" size={40} />
               <h3>Network & Security Projects</h3>
-              <p>180+ Enterprise deployments.</p>
+              <p>{settings?.network_projects || '180+'} Enterprise deployments.</p>
             </div>
             <div className="overview-item">
               <div className="overview-number">06</div>
               <Users className="text-accent" size={40} />
               <h3>Employees</h3>
-              <p>50+ Dedicated professionals.</p>
+              <p>{settings?.employees || '50+'} Dedicated professionals.</p>
             </div>
           </div>
         </div>

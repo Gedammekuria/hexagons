@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllTeam, createMember, updateMember, deleteMember, uploadImage } from '../../../api/client';
-import { Plus, Edit2, Trash2, Save, X, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, Loader2, Search, RefreshCw } from 'lucide-react';
 import { useToast } from '../../../components/Toast';
 
 const STATUS_CONFIG = {
@@ -21,23 +21,34 @@ const StatusBadge = ({ status }) => {
 
 const EMPTY = { name: '', role: '', bio: '', image: '', email: '', linkedin: '', sort_order: 0, active: true, status: 'official' };
 const inp = { width: '100%', boxSizing: 'border-box', padding: '0.7rem 0.9rem', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.5rem', color: '#111827', fontSize: '0.9rem', outline: 'none' };
+const LIMIT = 15;
 
 const TeamManager = ({ token }) => {
   const [members, setMembers] = useState([]);
   const [editing, setEditing] = useState(null);
   const [form, setForm]       = useState(EMPTY);
   const [saving, setSaving]   = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch]   = useState('');
+  const [filter, setFilter]   = useState('all');
+  const [date, setDate]       = useState('');
+  const [page, setPage]       = useState(1);
   const [msg, setMsg]         = useState('');
   const { addToast }          = useToast();
 
   const load = async () => {
-    try { const d = await getAllTeam(token); setMembers(d); } catch {}
+    setLoading(true);
+    try { 
+      const d = await getAllTeam(token); 
+      setMembers(d); 
+    } catch {} 
+    finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
 
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
   const openNew  = () => { setForm(EMPTY); setEditing('new'); };
-  const openEdit = (m) => { setForm({ ...m, active: m.active === 1, status: m.status || 'official' }); setEditing(m.id); };
+  const openEdit = (m) => { setForm({ ...m, active: m.active === 1 || m.active === true, status: m.status || 'official' }); setEditing(m.id); };
   const cancel   = () => { setEditing(null); setMsg(''); };
 
   const save = async () => {
@@ -60,7 +71,25 @@ const TeamManager = ({ token }) => {
     } catch (e) { addToast('Delete failed: ' + e.message, 'error'); }
   };
 
-  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+  const filteredMembers = members.filter(m => {
+    const matchesSearch = !search || 
+      m.name.toLowerCase().includes(search.toLowerCase()) || 
+      m.role.toLowerCase().includes(search.toLowerCase()) ||
+      (m.email && m.email.toLowerCase().includes(search.toLowerCase()));
+    
+    const matchesStatus = filter === 'all' || m.status === filter;
+
+    const matchesDate = !date || (m.created_at && new Date(m.created_at).toISOString().split('T')[0] === date);
+    
+    return matchesSearch && matchesStatus && matchesDate;
+  });
+
+  const totalPages = Math.ceil(filteredMembers.length / LIMIT);
+  const paginatedMembers = filteredMembers.slice((page - 1) * LIMIT, page * LIMIT);
+
+  const fmtDate = (d) => d ? new Date(d).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—';
+  
+  useEffect(() => { setPage(1); }, [search, filter, date]);
 
   if (editing !== null) return (
     <div style={{ padding: '2rem', overflowY: 'auto', maxWidth: 600 }}>
@@ -82,7 +111,6 @@ const TeamManager = ({ token }) => {
         </div>
       ))}
 
-      {/* Status dropdown */}
       <div style={{ marginBottom: '0.9rem' }}>
         <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>Employment Status</label>
         <select value={form.status || 'official'} onChange={e => set('status', e.target.value)} style={inp}>
@@ -92,7 +120,6 @@ const TeamManager = ({ token }) => {
         </select>
       </div>
 
-      {/* Photo Upload */}
       <div style={{ marginBottom: '0.9rem' }}>
         <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>Photo URL or Upload</label>
         {form.image && (
@@ -121,13 +148,9 @@ const TeamManager = ({ token }) => {
               } catch (err) { setMsg('Upload failed: ' + err.message); }
             }} style={{ display: 'none' }} />
           </label>
-          <div style={{ fontSize: '0.75rem', color: '#6b7280', whiteSpace: 'nowrap', background: '#f8fafc', padding: '0.6rem 0.8rem', borderRadius: '0.4rem', border: '1px solid #e2e8f0' }}>
-            Rec: <strong style={{ color: '#111827' }}>400x400 (1:1)</strong>
-          </div>
         </div>
       </div>
 
-      {/* Bio */}
       <div style={{ marginBottom: '0.9rem' }}>
         <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>Bio</label>
         <textarea rows={4} value={form.bio || ''} onChange={e => set('bio', e.target.value)} style={{ ...inp, resize: 'vertical', fontFamily: 'inherit' }} />
@@ -140,52 +163,90 @@ const TeamManager = ({ token }) => {
   );
 
   return (
-    <div style={{ padding: '2rem', overflowY: 'auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+    <div className="admin-content" style={{ padding: '2rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
         <h2 style={{ color: '#111827', margin: 0 }}>Team Members <span style={{ color: '#6b7280', fontSize: '1rem' }}>({members.length})</span></h2>
-        <button onClick={openNew} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>
-          <Plus size={16}/> Add Member
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#ffffff', border: 'none', borderRadius: '0.5rem', color: '#6b7280', padding: '0.5rem 0.9rem', cursor: 'pointer', fontSize: '0.85rem' }}>
+            <RefreshCw size={14}/> Refresh
+          </button>
+          <button onClick={openNew} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+            <Plus size={16}/> Add Member
+          </button>
+        </div>
       </div>
 
-      {members.length === 0
-        ? <div style={{ color: '#6b7280', textAlign: 'center', padding: '3rem', background: '#ffffff', borderRadius: '0.75rem' }}>No team members yet.</div>
-        : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
-            {members.map(m => (
-              <div key={m.id} style={{ padding: '1rem', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', opacity: m.active ? 1 : 0.55 }}>
-                {/* Top row: avatar + name + actions */}
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                  {m.image
-                    ? <img 
-                        src={m.image.startsWith('http') ? m.image : (m.image.startsWith('/images') ? m.image : `${m.image}`)} 
-                        alt={m.name} 
-                        style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
-                      />
-                    : <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(0,179,122,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#00b37a', fontWeight: 700, fontSize: '1.1rem' }}>{m.name[0]}</div>
-                  }
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <div style={{ color: '#111827', fontWeight: 600, fontSize: '0.9rem' }}>{m.name}</div>
-                      <span style={{ fontSize: '0.7rem', color: '#9ca3af', background: '#f8fafc', padding: '0.05rem 0.35rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>HEX_{m.id}</span>
-                    </div>
-                    <div style={{ color: '#6b7280', fontSize: '0.78rem' }}>{m.role}</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.3rem', flexShrink: 0 }}>
+      {/* Filters */}
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
+          <Search size={13} style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', color: '#6b7280' }}/>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search members by name, role or email..." style={{ ...inp, paddingLeft: '2rem', fontSize: '0.85rem' }}/>
+        </div>
+        <input 
+          type="date" 
+          value={date} 
+          onChange={e => setDate(e.target.value)} 
+          style={{ ...inp, width: 'auto', paddingLeft: '0.75rem', fontSize: '0.85rem', color: date ? '#111827' : '#6b7280' }}
+        />
+        <select value={filter} onChange={e => setFilter(e.target.value)} style={{ ...inp, width: 'auto', paddingLeft: '0.75rem', fontSize: '0.85rem' }}>
+          <option value="all">All Status</option>
+          {Object.keys(STATUS_CONFIG).map(s => <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>)}
+        </select>
+        {(search || filter !== 'all' || date) && (
+          <button 
+            onClick={() => { setSearch(''); setFilter('all'); setDate(''); }}
+            style={{ background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '0.5rem', padding: '0 0.8rem', color: '#374151', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500 }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {loading ? <div style={{ color: '#6b7280', textAlign: 'center', padding: '3rem' }}>Loading…</div> :
+        filteredMembers.length === 0 ? <div style={{ color: '#6b7280', textAlign: 'center', padding: '3rem', background: '#ffffff', borderRadius: '0.75rem' }}>No team members found.</div> :
+        <div className="table-container">
+          <table className="admin-table">
+            <thead><tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+              {['ID', 'Photo', 'Name', 'Role', 'Email', 'Status', 'Registered', 'Order', 'Visibility', 'Action'].map(h => <th key={h} style={{ padding: '0.7rem 0.9rem', color: '#6b7280', fontSize: '0.72rem', fontWeight: 600, textAlign: 'left', textTransform: 'uppercase' }}>{h}</th>)}
+            </tr></thead>
+            <tbody>{paginatedMembers.map(m => (
+              <tr key={m.id} style={{ borderBottom: '1px solid #e5e7eb', background: m.active ? 'transparent' : 'rgba(0,0,0,0.02)' }}>
+                <td style={{ padding: '0.75rem 0.9rem', color: '#6b7280', fontSize: '0.8rem' }}>HEX_{m.id}</td>
+                <td style={{ padding: '0.75rem 0.9rem' }}>
+                  {m.image ? (
+                    <img src={m.image.startsWith('http') ? m.image : (m.image.startsWith('/images') ? m.image : `${m.image}`)} alt={m.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,179,122,0.1)', color: '#00b37a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700 }}>{m.name[0]}</div>
+                  )}
+                </td>
+                <td style={{ padding: '0.75rem 0.9rem', color: '#111827', fontWeight: 600, fontSize: '0.88rem' }}>{m.name}</td>
+                <td style={{ padding: '0.75rem 0.9rem', color: '#6b7280', fontSize: '0.83rem' }}>{m.role}</td>
+                <td style={{ padding: '0.75rem 0.9rem', color: '#6b7280', fontSize: '0.83rem' }}>{m.email || '—'}</td>
+                <td style={{ padding: '0.75rem 0.9rem' }}><StatusBadge status={m.status || 'official'} /></td>
+                <td style={{ padding: '0.75rem 0.9rem', color: '#6b7280', fontSize: '0.78rem' }}>{fmtDate(m.created_at)}</td>
+                <td style={{ padding: '0.75rem 0.9rem', color: '#6b7280', fontSize: '0.8rem' }}>{m.sort_order}</td>
+                <td style={{ padding: '0.75rem 0.9rem' }}>
+                  <span style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: '4px', background: m.active ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: m.active ? '#16a34a' : '#ef4444', fontWeight: 600 }}>
+                    {m.active ? 'Visible' : 'Hidden'}
+                  </span>
+                </td>
+                <td style={{ padding: '0.75rem 0.9rem' }}>
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
                     <button onClick={() => openEdit(m)} style={{ background: '#f3f4f6', border: 'none', borderRadius: '0.4rem', color: '#374151', padding: '0.35rem 0.6rem', cursor: 'pointer' }}><Edit2 size={13}/></button>
                     <button onClick={() => del(m.id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: '0.4rem', color: '#f87171', padding: '0.35rem 0.6rem', cursor: 'pointer' }}><Trash2 size={13}/></button>
                   </div>
-                </div>
-
-                {/* Bottom row: status badge + registered date */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.4rem', borderTop: '1px solid #f3f4f6' }}>
-                  <StatusBadge status={m.status || 'official'} />
-                  <span style={{ fontSize: '0.68rem', color: '#9ca3af' }}>
-                    Registered: {fmtDate(m.created_at)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+                </td>
+              </tr>
+            ))}</tbody>
+          </table>
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center', padding: '1rem', borderTop: '1px solid #e5e7eb' }}>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.4rem', color: '#111827', padding: '0.45rem 0.7rem', cursor: 'pointer', opacity: page === 1 ? 0.4 : 1 }}><ChevronLeft size={15}/></button>
+              <span style={{ color: '#6b7280', fontSize: '0.82rem' }}>Page {page} of {totalPages}</span>
+              <button onClick={() => setPage(p => p + 1)} disabled={page >= totalPages} style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.4rem', color: '#111827', padding: '0.45rem 0.7rem', cursor: 'pointer', opacity: page >= totalPages ? 0.4 : 1 }}><ChevronRight size={15}/></button>
+            </div>
+          )}
+        </div>
       }
     </div>
   );

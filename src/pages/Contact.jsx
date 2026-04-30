@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle2, Loader2, AlertCircle, Clock } from 'lucide-react';
 import { submitInquiry } from '../api/client';
 import SEO from '../components/SEO';
 import { useToast } from '../components/Toast';
+import { useSettings } from '../context/SettingsContext';
 
 const Contact = () => {
+  const { settings } = useSettings();
   const [selectedService, setSelectedService] = useState('');
   const [selectedSubServices, setSelectedSubServices] = useState([]);
   const [formData, setFormData] = useState({
@@ -125,11 +127,21 @@ const Contact = () => {
               <div className="contact-methods">
                 <div className="method-item">
                   <div className="hexagon-icon-small">
+                    <Clock size={18} />
+                  </div>
+                  <div>
+                    <h4>Working Hours</h4>
+                    <p>{settings?.working_hours || "Mon – Fri: 8:00 AM – 6:00 PM"}</p>
+                  </div>
+                </div>
+
+                <div className="method-item">
+                  <div className="hexagon-icon-small">
                     <Phone size={18} />
                   </div>
                   <div>
                     <h4>Phone</h4>
-                    <p>+251-944161572</p>
+                    <p>{settings?.phone || "+251-944161572"}</p>
                   </div>
                 </div>
 
@@ -139,7 +151,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4>Email</h4>
-                    <p>info@hexagonview.com</p>
+                    <p>{settings?.email || "info@hexagonview.com"}</p>
                   </div>
                 </div>
 
@@ -149,8 +161,8 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4>Address</h4>
-                    <p>22 Mazoriya, MAF Building, 4th FL, #402, Addis Ababa, Ethiopia</p>
-                    <p style={{ marginTop: '0.2rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>P.O. Box: 15,444, Addis Ababa, Ethiopia</p>
+                    <p>{settings?.address || "22 Mazoriya, MAF Building, 4th FL, #402, Addis Ababa, Ethiopia"}</p>
+                    {settings?.po_box && <p style={{ marginTop: '0.2rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{settings.po_box}</p>}
                   </div>
                 </div>
               </div>

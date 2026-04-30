@@ -4,7 +4,7 @@ import SiteSettings  from './panels/SiteSettings';
 import BlogManager   from './panels/BlogManager';
 import TeamManager   from './panels/TeamManager';
 import InquiriesPanel from './panels/InquiriesPanel';
-import PageEditor     from './panels/PageEditor';
+
 import ProjectManager from './panels/ProjectManager';
 import ServicesManager from './panels/ServicesManager';
 import BrandManager   from './panels/BrandManager';
@@ -25,7 +25,7 @@ const nav = [
   { id: 'projects',   label: 'Projects',       icon: Folder },
   { id: 'brands',     label: 'Brands/Partners',icon: Award },
   { id: 'clients',    label: 'Our Clients',    icon: Briefcase },
-  { id: 'pages',      label: 'Page Content',   icon: Layers },
+
   { id: 'settings',   label: 'Site Settings',  icon: Settings },
 ];
 
@@ -65,7 +65,7 @@ const DashboardHome = ({ token, setActive }) => {
           { label: 'Write Blog Post',  icon: FileText,  id: 'blog' },
           { label: 'Edit Team',        icon: Users,     id: 'team' },
           { label: 'Manage Projects',  icon: Folder,    id: 'projects' },
-          { label: 'Edit Page Text',   icon: Layers,    id: 'pages' },
+
           { label: 'Site Settings',    icon: Settings,  id: 'settings' },
         ].map(item => (
           <button key={item.id} onClick={() => setActive(item.id)} style={{
@@ -107,7 +107,7 @@ const AdminDashboard = ({ token, admin, onLogout }) => {
     services:  <ServicesManager token={token}/>,
     brands:    <BrandManager token={token}/>,
     clients:   <ClientManager token={token}/>,
-    pages:     <PageEditor token={token}/>,
+
     settings:  <SiteSettings token={token}/>,
   };
 

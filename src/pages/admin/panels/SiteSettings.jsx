@@ -98,6 +98,7 @@ const SiteSettings = ({ token }) => {
         {field('Twitter/X URL', 'twitter', data.twitter, set, 'url')}
         {field('Instagram URL', 'instagram', data.instagram, set, 'url')}
         {field('Telegram URL', 'telegram', data.telegram, set, 'url')}
+        {field('TikTok URL', 'tiktok', data.tiktok, set, 'url')}
       </>)}
 
       {section('Security', <>
