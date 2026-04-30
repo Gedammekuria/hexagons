@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight, Code, Globe, Shield, Database, Layout, Users, X, CheckCircle2, Monitor, ShieldCheck, Palette, Server, Lock, Flame, Network, Camera, Fingerprint, Zap, Headset, Wrench, Briefcase, Settings, Smartphone, LayoutDashboard, Printer, Megaphone, PenTool, ChevronLeft, ChevronRight, MapPin, Phone, Tv, Wifi, Share2, Search, Folder } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { getContent, getProjects } from '../api/client';
+import { getContent, getProjects, getImageUrl } from '../api/client';
 import SEO from '../components/SEO';
 import Procedures from './Procedures';
 import Team from './Team';
@@ -12,7 +12,7 @@ const ProjectCard = ({ title, category, description, tags, image, link, show_lin
   <div className="glass-card project-card animate-fade-in">
     {image ? (
       <img
-        src={image.startsWith('http') ? image : (image.startsWith('/images') ? image : `http://localhost:5000${image}`)}
+        src={getImageUrl(image)}
         alt={title}
         className="project-card-img"
       />

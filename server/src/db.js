@@ -25,6 +25,13 @@ export const getDb = () => pool;
 export async function initSchema() {
   const client = await pool.connect();
   try {
+    // Quick check if already initialized to save time on Vercel cold starts
+    const tableCheck = await client.query("SELECT 1 FROM information_schema.tables WHERE table_name = 'admins' LIMIT 1");
+    if (tableCheck.rowCount > 0) {
+      console.log('✅ Database schema exists, checking for missing data...');
+    } else {
+      console.log('🔄 Initializing database schema...');
+    }
     await client.query(`
       CREATE TABLE IF NOT EXISTS admins (
         id           SERIAL PRIMARY KEY,

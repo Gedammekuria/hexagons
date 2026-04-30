@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Building2, Globe, Hotel, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getClients } from '../api/client';
+import { getClients, getImageUrl } from '../api/client';
 
 const Clients = () => {
   const scrollRef = useRef(null);
@@ -91,7 +91,7 @@ const Clients = () => {
                     <div className="partner-logo">
                       {client.logo ? (
                         <img 
-                          src={client.logo.startsWith('http') ? client.logo : (client.logo.startsWith('/images') ? client.logo : `http://localhost:5000${client.logo}`)} 
+                          src={getImageUrl(client.logo)} 
                           alt={`${client.name} logo`} 
                         />
                       ) : (

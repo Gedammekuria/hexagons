@@ -1,10 +1,10 @@
 import React from 'react';
 import Clients from './Clients';
-import { getPublicTeam } from '../api/client';
+import { getPublicTeam, getImageUrl } from '../api/client';
 
 const TeamMember = ({ name, role, bio, image }) => (
   <div className="team-card glass-card">
-    <div className="member-image-placeholder" style={image ? { background: `url('${image.startsWith('http') ? image : `http://localhost:5000${image}`}') center/cover no-repeat` } : {}}>
+    <div className="member-image-placeholder" style={image ? { background: `url('${getImageUrl(image)}') center/cover no-repeat` } : {}}>
       <div className="hexagon-mask"></div>
     </div>
     <div className="member-info">

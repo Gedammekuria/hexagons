@@ -50,9 +50,13 @@ const FloatingActions = () => {
       setChatHistory(prev => [...prev, aiResponse]);
     } catch (error) {
       console.error('AI Error:', error);
+      const errorMsg = error.message && !error.message.includes('HTTP') 
+        ? `Error: ${error.message}` 
+        : "I'm having trouble connecting to my brain right now. Please try again or contact us directly at +251-944161572.";
+        
       const errorResponse = { 
         type: 'ai', 
-        text: "I'm having trouble connecting to my brain right now. Please try again or contact us directly at +251-944161572." 
+        text: errorMsg 
       };
       setChatHistory(prev => [...prev, errorResponse]);
     } finally {

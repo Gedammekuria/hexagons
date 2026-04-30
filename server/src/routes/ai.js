@@ -17,101 +17,114 @@ router.post('/chat', async (req, res) => {
 
     const db = getDb();
     
-    // Fetch site settings and all services for rich context
-    const [settingsRes, servicesRes] = await Promise.all([
-      db.query('SELECT key, value FROM site_settings'),
-      db.query('SELECT title, description, tagline FROM services WHERE active = 1')
-    ]);
-
-    const settings = {};
-    for (const row of settingsRes.rows) settings[row.key] = row.value;
+    // Fetch site settings and all services for rich context with fallback
+    let settings = {};
+    let servicesContext = '';
     
-    const servicesContext = servicesRes.rows.map(s => `- ${s.title}: ${s.tagline}. ${s.description.substring(0, 200)}...`).join('\n');
+    try {
+      const [settingsRes, servicesRes] = await Promise.all([
+        db.query('SELECT key, value FROM site_settings'),
+        db.query('SELECT title, description, tagline FROM services WHERE active = 1')
+      ]);
+      for (const row of settingsRes.rows) settings[row.key] = row.value;
+      servicesContext = servicesRes.rows.map(s => `- ${s.title}: ${s.tagline}. ${s.description.substring(0, 150)}...`).join('\n');
+    } catch (dbError) {
+      console.warn('[AI DB Context Error]:', dbError.message);
+    }
 
-    const systemInstruction = `
-      You are the official AI Assistant for Hexagon Computer Systems, a leading IT provider in Ethiopia.
-      
-      Company Info:
-      - Name: ${settings.company_name || 'Hexagon Computer Systems'}
-      - Address: ${settings.address || 'Addis Ababa, Ethiopia'}
-      - Phone: ${settings.phone || '+251-944161572'}
-      - Email: ${settings.email || 'info@hexagonview.com'}
-      - Experience: ${settings.experience_years || '15+'} years in industry.
-      
-      Our Core Services:
-      ${servicesContext}
+    const systemPrompt = `You are the official AI Assistant for Hexagon Computer Systems, a leading IT provider in Ethiopia.
 
-      Guidelines:
-      - Be professional, helpful, and concise.
-      - Use bullet points for lists.
-      - If asked about pricing, explain that we offer custom quotes based on project complexity.
-      - Encourage users to contact us at ${settings.phone} or ${settings.email} for detailed consultations.
-      - Do not mention being an AI model; simply act as Hexagon's digital representative.
-    `;
+Company Info:
+- Name: ${settings.company_name || 'Hexagon Computer Systems'}
+- Address: ${settings.address || 'Addis Ababa, Ethiopia'}
+- Phone: ${settings.phone || '+251-944161572'}
+- Email: ${settings.email || 'info@hexagonview.com'}
+- Experience: ${settings.experience_years || '15+'} years in industry.
+
+Our Core Services:
+${servicesContext || '- IT Support, Networking, Security, Cybersecurity, Digital Marketing, Software Development, Web Hosting.'}
+
+Guidelines:
+- Be professional, helpful, and concise.
+- Use bullet points for lists.
+- If asked about pricing, explain we offer custom quotes based on project complexity.
+- Encourage users to contact us at ${settings.phone || '+251-944161572'} or ${settings.email || 'info@hexagonview.com'} for consultations.
+- Act as Hexagon's digital representative, not as an AI model.`;
 
     const genAI = new GoogleGenerativeAI(apiKey.trim());
     
-    // Attempt to get the model with fallback options
-    let model;
-    try {
-      model = genAI.getGenerativeModel({ 
-        model: "gemini-flash-latest",
-        systemInstruction: systemInstruction 
-      });
-    } catch (e) {
-      console.warn('[AI] gemini-flash-latest failed, trying gemini-pro-latest');
-      model = genAI.getGenerativeModel({ model: "gemini-pro-latest" });
-    }
-
-    // Format history for Gemini (Strictly alternate User -> Model)
-    const formattedHistory = [];
-    const rawHistory = history || [];
+    // Use model names from your available API key list
+    const modelCandidates = [
+      'gemini-2.0-flash',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash-lite',
+    ];
     
-    for (const msg of rawHistory) {
-      const role = msg.type === 'user' ? 'user' : 'model';
+    let responseText = '';
+    let success = false;
+    let lastError = null;
+
+    for (const modelName of modelCandidates) {
+      if (success) break;
       
-      // Gemini history MUST start with 'user'. 
-      // If the first message is from the model (the greeting), we skip it to satisfy Gemini's API.
-      if (formattedHistory.length === 0 && role === 'model') continue;
-      
-      // Ensure strictly alternating roles
-      if (formattedHistory.length > 0 && formattedHistory[formattedHistory.length - 1].role === role) {
-        // Append text to the last message of the same role instead of skipping
-        formattedHistory[formattedHistory.length - 1].parts[0].text += "\n" + msg.text;
+      try {
+        console.log(`[AI] Trying ${modelName}...`);
+        
+        // Use getGenerativeModel WITHOUT systemInstruction (not supported on all models/SDK versions)
+        const model = genAI.getGenerativeModel({ model: modelName });
+
+        // Build history with system prompt injected as the very first exchange
+        const formattedHistory = [
+          { role: 'user', parts: [{ text: systemPrompt }] },
+          { role: 'model', parts: [{ text: 'Understood! I am ready to assist as the Hexagon AI Assistant. How can I help you today?' }] },
+        ];
+
+        // Append past conversation, keeping last 8 exchanges
+        const rawHistory = (history || []).slice(-8);
+        for (const msg of rawHistory) {
+          const role = msg.type === 'user' ? 'user' : 'model';
+          if (formattedHistory.length > 0 && formattedHistory[formattedHistory.length - 1].role === role) {
+            formattedHistory[formattedHistory.length - 1].parts[0].text += '\n' + msg.text;
+            continue;
+          }
+          formattedHistory.push({ role, parts: [{ text: msg.text }] });
+        }
+
+        // History must end with 'model' before we send a new 'user' message
+        if (formattedHistory[formattedHistory.length - 1].role === 'user') {
+          formattedHistory.push({ role: 'model', parts: [{ text: 'How can I assist you?' }] });
+        }
+
+        const chat = model.startChat({
+          history: formattedHistory,
+          generationConfig: { maxOutputTokens: 800, temperature: 0.7 },
+        });
+
+        const result = await chat.sendMessage(message);
+        responseText = result.response.text();
+        
+        if (responseText) {
+          success = true;
+          console.log(`[AI] Success with ${modelName}`);
+        }
+      } catch (e) {
+        console.warn(`[AI] Failed with ${modelName}:`, e.message);
+        lastError = e;
         continue;
       }
-      
-      formattedHistory.push({
-        role: role,
-        parts: [{ text: msg.text }]
-      });
     }
 
-    // If history ended with 'user', Gemini expects 'model' next, 
-    // but startChat history must be balanced for a new user message.
-    if (formattedHistory.length > 0 && formattedHistory[formattedHistory.length - 1].role === 'user') {
-      formattedHistory.push({ role: 'model', parts: [{ text: "Understood. How can I assist you further?" }] });
+    if (!success) {
+      throw new Error(`All Gemini models failed. Last error: ${lastError?.message}`);
     }
-
-    const chat = model.startChat({
-      history: formattedHistory,
-      generationConfig: {
-        maxOutputTokens: 800,
-        temperature: 0.7,
-      },
-    });
-
-    console.log('[AI] Sending request to Gemini API...');
-    const result = await chat.sendMessage(message);
-    const responseText = result.response.text();
-    console.log('[AI] Received response successfully.');
 
     res.json({ text: responseText });
   } catch (error) {
     console.error('[AI Error Details]:', error);
+    const detailedError = error.message || 'Unknown AI error';
     res.status(500).json({ 
-      message: 'AI Service Error', 
-      error: error.message
+      message: `AI Service Error: ${detailedError}`, 
+      error: detailedError
     });
   }
 });

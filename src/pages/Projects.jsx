@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ExternalLink, Link, Folder, Code, Terminal, Cpu, Layout, Shield, Monitor, Smartphone, Database } from 'lucide-react';
-import { getProjects } from '../api/client';
+import { getProjects, getImageUrl } from '../api/client';
 import SEO from '../components/SEO';
 
 const ProjectCard = ({ title, category, description, tags, image, link, show_link, icon: Icon }) => (
   <div className="glass-card project-card animate-fade-in">
     {image ? (
       <img
-        src={image.startsWith('http') ? image : (image.startsWith('/images') ? image : `http://localhost:5000${image}`)}
+        src={getImageUrl(image)}
         alt={title}
         className="project-card-img"
       />

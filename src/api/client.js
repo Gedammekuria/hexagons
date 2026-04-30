@@ -1,4 +1,12 @@
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api';
+const API_BASE = (import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000' : '')) + '/api';
+
+export const getImageUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  if (path.startsWith('/images')) return path;
+  const base = API_BASE.replace('/api', '');
+  return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 async function request(method, path, body, token) {
   const headers = { 'Content-Type': 'application/json' };
