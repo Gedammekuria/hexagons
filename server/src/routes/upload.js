@@ -7,12 +7,6 @@ import { authMiddleware } from '../middleware/auth.js';
 import 'dotenv/config';
 
 // Configure Cloudinary
-console.log('☁️ Configuring Cloudinary with:', { 
-  cloud: process.env.CLOUDINARY_CLOUD_NAME ? 'Yes' : 'No',
-  key: process.env.CLOUDINARY_API_KEY ? 'Yes' : 'No',
-  secret: process.env.CLOUDINARY_API_SECRET ? 'Yes' : 'No' 
-});
-
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key:    process.env.CLOUDINARY_API_KEY,

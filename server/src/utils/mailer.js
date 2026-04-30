@@ -139,7 +139,7 @@ export async function sendPasswordResetEmail(email, pin) {
         <span style="font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #111827;">${pin}</span>
       </div>
       <p style="font-size: 14px; color: #6b7280; line-height: 1.6;">
-        This PIN is valid for <strong>15 minutes</strong>. If you did not request this, please ignore this email or contact the system administrator.
+        This PIN is valid for <strong>5 minutes</strong>. If you did not request this, please ignore this email or contact the system administrator.
       </p>
       <p style="color: #64748b; font-size: 13px; margin-top: 24px; text-align: center;">
         Hexagon Computer Systems · Addis Ababa, Ethiopia

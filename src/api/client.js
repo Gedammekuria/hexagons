@@ -1,5 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
-console.log('📡 API Base URL:', API_BASE);
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api';
 
 async function request(method, path, body, token) {
   const headers = { 'Content-Type': 'application/json' };

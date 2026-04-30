@@ -269,7 +269,7 @@ export async function initSchema() {
     // Seed default Admin if empty
     const adminCheck = await client.query("SELECT COUNT(*) FROM admins");
     if (parseInt(adminCheck.rows[0].count) === 0) {
-      const email = process.env.ADMIN_EMAIL || 'admin@hexagonview.com';
+      const email = process.env.ADMIN_EMAIL || 'gedu0194@gmail.com';
       const password = process.env.ADMIN_PASSWORD || 'Admin@Hexagon2024';
       const hashed = bcrypt.hashSync(password, 10);
       await client.query("INSERT INTO admins (email, password) VALUES ($1, $2)", [email, hashed]);

@@ -91,7 +91,7 @@ router.post('/forgot-password', async (req, res) => {
     if (result.rowCount === 0) return res.json({ message: 'If that email exists in our system, a PIN has been sent.' });
 
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+    const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
 
     await db.query('UPDATE admins SET reset_pin = $1, reset_expiry = $2 WHERE email = $3', [pin, expiry, email.trim().toLowerCase()]);
     

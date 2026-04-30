@@ -89,6 +89,12 @@ const Services = () => {
             <div className="service-overview-text">
               <h2>Overview</h2>
               <p>{s.description}</p>
+              <div className="service-commitment-box mt-3" style={{ borderLeft: `4px solid ${s.color}`, paddingLeft: '1.5rem', background: 'rgba(255,255,255,0.5)', padding: '1.25rem', borderRadius: '0 1rem 1rem 0' }}>
+                <h4 style={{ color: s.color, marginBottom: '0.5rem', fontSize: '1rem' }}>Our Strategic Commitment</h4>
+                <p style={{ fontSize: '0.9rem', fontStyle: 'italic', color: '#4b5563', margin: 0 }}>
+                  We don't just provide services; we build long-term partnerships focused on your digital success and operational excellence.
+                </p>
+              </div>
             </div>
             {s.image && (
               <div className="service-overview-image">
@@ -98,29 +104,34 @@ const Services = () => {
           </div>
 
           <div className="detailed-features-list mt-4">
-            <h2>Our Specialized Solutions</h2>
+            <h2 className="section-title left">Our Specialized Solutions</h2>
             <div className="detailed-feature-grid">
-              {s.features.map((f, i) => (
-                <div key={i} className="detailed-feature-card glass-card animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-                  <div className="feature-header">
-
-                    <h3>{f.title}</h3>
+              {s.features.map((f, i) => {
+                const FeatureIcon = getIcon(f.icon);
+                return (
+                  <div key={i} className="detailed-feature-card glass-card animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                    <div className="feature-header">
+                      <div className="feature-icon" style={{ backgroundColor: 'rgba(37, 99, 235, 0.08)', color: 'var(--primary)' }}>
+                        <FeatureIcon size={24} />
+                      </div>
+                      <h3>{f.title}</h3>
+                    </div>
+                    <div className="feature-body">
+                      <p>{f.desc}</p>
+                      {f.highlights && f.highlights.length > 0 && (
+                        <ul className="feature-highlights" style={{ listStyle: 'none', padding: 0, paddingLeft: '0.75rem', marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                          {f.highlights.map((h, hi) => (
+                            <li key={hi} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                              <CheckCircle2 size={16} style={{ color: '#10b981', marginTop: '0.2rem', flexShrink: 0 }} />
+                              <span>{h}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   </div>
-                  <div className="feature-body">
-                    <p>{f.desc}</p>
-                    {f.highlights && f.highlights.length > 0 && (
-                      <ul className="feature-highlights" style={{ listStyle: 'none', padding: 0, marginTop: '1rem', marginLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        {f.highlights.map((h, hi) => (
-                          <li key={hi} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#4b5563' }}>
-                            <LucideIcons.CheckCircle2 size={14} color={s.color} style={{ flexShrink: 0 }} />
-                            <span>{h}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
