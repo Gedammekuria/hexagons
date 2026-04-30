@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminLogin, forgotPassword, resetPassword } from '../../api/client';
+import { adminLogin, forgotPassword, resetPassword, verifyPin } from '../../api/client';
 import { LogIn, Loader2, AlertCircle, ShieldCheck, Mail, ArrowLeft, Key } from 'lucide-react';
 
 const AdminLogin = ({ onLogin }) => {
@@ -11,6 +11,7 @@ const AdminLogin = ({ onLogin }) => {
   const [pin, setPin]           = useState('');
   const [newPass, setNewPass]   = useState('');
   const [success, setSuccess]   = useState('');
+  const [resetStep, setResetStep] = useState(1); // 1: PIN, 2: Password
 
   useEffect(() => { document.title = 'Admin Login — Hexagon'; }, []);
 
@@ -39,7 +40,19 @@ const AdminLogin = ({ onLogin }) => {
     try {
       await forgotPassword(email);
       setMode('reset');
+      setResetStep(1);
       setSuccess('If the email matches an admin, a security PIN has been sent.');
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
+  };
+
+  const handleVerifyPin = async (e) => {
+    e.preventDefault();
+    setError(''); setLoading(true);
+    try {
+      await verifyPin(email, pin);
+      setResetStep(2);
+      setSuccess('PIN verified! Now enter your new password.');
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   };
@@ -67,7 +80,7 @@ const AdminLogin = ({ onLogin }) => {
         padding: '3rem',
       }} className="login-left-panel">
         <div style={{ textAlign: 'center', color: 'white' }}>
-          <div style={{ fontSize: '5rem', marginBottom: '1rem', color: '#00b37a' }}>⬡</div>
+          <img src="/images/hexagon-logo.png" alt="Hexagon Logo" style={{ height: '80px', marginBottom: '1.5rem' }} />
           <h1 style={{ fontSize: '2rem', fontWeight: 800, margin: '0 0 0.5rem' }}>Hexagon CMS</h1>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1rem' }}>Complete website management in one place</p>
         </div>
@@ -142,24 +155,49 @@ const AdminLogin = ({ onLogin }) => {
           )}
 
           {mode === 'reset' && (
-            <form onSubmit={handleReset} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', color: '#374151', fontSize: '0.82rem', marginBottom: '0.4rem', fontWeight: 600 }}>Security PIN</label>
-                <input type="text" value={pin} onChange={e => setPin(e.target.value)} required placeholder="6-digit code from email" style={inp} autoFocus />
-              </div>
-              <div>
-                <label style={{ display: 'block', color: '#374151', fontSize: '0.82rem', marginBottom: '0.4rem', fontWeight: 600 }}>New Password</label>
-                <input type="password" value={newPass} onChange={e => setNewPass(e.target.value)} required placeholder="Minimum 6 characters" style={inp} />
-              </div>
-              <button type="submit" disabled={loading} style={{
-                marginTop: '0.5rem', padding: '0.85rem', border: 'none', borderRadius: '0.6rem',
-                background: '#111827', color: 'white', fontWeight: 600, fontSize: '0.95rem',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-              }}>
-                {loading ? <Loader2 size={17} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Key size={17} />}
-                Reset Password
-              </button>
+            <form onSubmit={resetStep === 1 ? handleVerifyPin : handleReset} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {resetStep === 1 ? (
+                <>
+                  <div>
+                    <label style={{ display: 'block', color: '#374151', fontSize: '0.82rem', marginBottom: '0.4rem', fontWeight: 600 }}>Security PIN</label>
+                    <input 
+                      type="text" 
+                      value={pin} 
+                      onChange={e => setPin(e.target.value)} 
+                      required 
+                      placeholder="Enter verification pin" 
+                      style={inp} 
+                      autoFocus 
+                      autoComplete="one-time-code"
+                    />
+                  </div>
+                  <button type="submit" disabled={loading} style={{
+                    marginTop: '0.5rem', padding: '0.85rem', border: 'none', borderRadius: '0.6rem',
+                    background: '#111827', color: 'white', fontWeight: 600, fontSize: '0.95rem',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                  }}>
+                    {loading ? <Loader2 size={17} style={{ animation: 'spin 0.8s linear infinite' }} /> : <ShieldCheck size={17} />}
+                    Verify PIN
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label style={{ display: 'block', color: '#374151', fontSize: '0.82rem', marginBottom: '0.4rem', fontWeight: 600 }}>New Password</label>
+                    <input type="password" value={newPass} onChange={e => setNewPass(e.target.value)} required placeholder="Minimum 8 characters" style={inp} autoComplete="new-password" autoFocus />
+                  </div>
+                  <button type="submit" disabled={loading} style={{
+                    marginTop: '0.5rem', padding: '0.85rem', border: 'none', borderRadius: '0.6rem',
+                    background: '#111827', color: 'white', fontWeight: 600, fontSize: '0.95rem',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                  }}>
+                    {loading ? <Loader2 size={17} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Key size={17} />}
+                    Reset Password
+                  </button>
+                </>
+              )}
               <button type="button" onClick={() => setMode('login')} style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', marginTop: '0.5rem' }}>
                 <ArrowLeft size={14} /> Back to Login
               </button>

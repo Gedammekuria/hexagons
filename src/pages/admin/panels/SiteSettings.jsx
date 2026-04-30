@@ -35,7 +35,7 @@ const SiteSettings = ({ token }) => {
   const updatePassword = async () => {
     if (!pass.current || !pass.next) return setPassMsg({ text: 'All fields required', type: 'error' });
     if (pass.next !== pass.confirm) return setPassMsg({ text: 'Passwords do not match', type: 'error' });
-    if (pass.next.length < 6) return setPassMsg({ text: 'New password too short', type: 'error' });
+    if (pass.next.length < 8) return setPassMsg({ text: 'New password must be at least 8 characters', type: 'error' });
 
     setPassLoading(true); setPassMsg({ text: '', type: '' });
     try {
@@ -59,7 +59,7 @@ const SiteSettings = ({ token }) => {
   );
 
   return (
-    <div style={{ padding: '2rem', overflowY: 'auto', maxWidth: 700 }}>
+    <div style={{ padding: '2rem', overflowY: 'auto', maxWidth: 700, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <h2 style={{ color: '#111827', margin: 0 }}>Site Settings</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -108,8 +108,63 @@ const SiteSettings = ({ token }) => {
         </div>
         
         {field('Current Password', 'current', pass.current, (k, v) => setPass(p => ({ ...p, current: v })), 'password')}
-        {field('New Password', 'next', pass.next, (k, v) => setPass(p => ({ ...p, next: v })), 'password')}
-        {field('Confirm New Password', 'confirm', pass.confirm, (k, v) => setPass(p => ({ ...p, confirm: v })), 'password')}
+        
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', color: '#6b7280', fontSize: '0.8rem', marginBottom: '0.3rem' }}>New Password</label>
+          <input 
+            type="password" 
+            value={pass.next || ''} 
+            onChange={e => setPass(p => ({ ...p, next: e.target.value }))}
+            style={{ width: '100%', boxSizing: 'border-box', padding: '0.7rem 0.9rem', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.5rem', color: '#111827', fontSize: '0.9rem', outline: 'none' }} 
+            autoComplete="new-password"
+          />
+          
+          {pass.next && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '4px', height: '4px', marginBottom: '0.4rem' }}>
+                {[1, 2, 3, 4].map(level => {
+                  const strength = (() => {
+                    let score = 0;
+                    if (pass.next.length >= 8) score++;
+                    if (/[0-9]/.test(pass.next)) score++;
+                    if (/[A-Z]/.test(pass.next)) score++;
+                    if (/[^A-Za-z0-9]/.test(pass.next)) score++;
+                    return score;
+                  })();
+                  
+                  const colors = ['#e5e7eb', '#ef4444', '#f59e0b', '#10b981', '#059669'];
+                  const activeColor = level <= strength ? colors[strength] : '#e5e7eb';
+                  
+                  return <div key={level} style={{ flex: 1, background: activeColor, borderRadius: '2px', transition: 'all 0.3s' }} />;
+                })}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: '#6b7280', display: 'flex', justifyContent: 'space-between' }}>
+                <span>Strength: {(() => {
+                  const s = pass.next.length;
+                  if (s === 0) return 'None';
+                  let score = 0;
+                  if (s >= 8) score++;
+                  if (/[0-9]/.test(pass.next)) score++;
+                  if (/[A-Z]/.test(pass.next)) score++;
+                  if (/[^A-Za-z0-9]/.test(pass.next)) score++;
+                  return ['Too Weak', 'Weak', 'Medium', 'Strong', 'Very Strong'][score];
+                })()}</span>
+                <span>Min 8 chars + numbers/symbols</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', color: '#6b7280', fontSize: '0.8rem', marginBottom: '0.3rem' }}>Confirm New Password</label>
+          <input 
+            type="password" 
+            value={pass.confirm || ''} 
+            onChange={e => setPass(p => ({ ...p, confirm: e.target.value }))}
+            style={{ width: '100%', boxSizing: 'border-box', padding: '0.7rem 0.9rem', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.5rem', color: '#111827', fontSize: '0.9rem', outline: 'none' }} 
+            autoComplete="new-password"
+          />
+        </div>
         
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.5rem' }}>
           {passMsg.text && (

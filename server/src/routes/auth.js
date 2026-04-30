@@ -101,6 +101,21 @@ router.post('/forgot-password', async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// POST /api/auth/verify-pin
+router.post('/verify-pin', async (req, res) => {
+  try {
+    const { email, pin } = req.body;
+    if (!email || !pin) return res.status(400).json({ message: 'Email and PIN are required.' });
+
+    const db = getDb();
+    const result = await db.query('SELECT id FROM admins WHERE email = $1 AND reset_pin = $2 AND reset_expiry > NOW()', [email.trim().toLowerCase(), pin]);
+    
+    if (result.rowCount === 0) return res.status(401).json({ message: 'Invalid or expired PIN.' });
+
+    res.json({ message: 'PIN verified successfully.' });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 // POST /api/auth/reset-password
 router.post('/reset-password', async (req, res) => {
   try {

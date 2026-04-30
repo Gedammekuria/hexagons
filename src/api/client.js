@@ -24,6 +24,7 @@ export const adminLogin     = (email, password) => request('POST', '/auth/login'
 export const verifyToken    = (token) => request('POST', '/auth/verify', null, token);
 export const changePassword = (token, currentPassword, newPassword) => request('POST', '/auth/change-password', { currentPassword, newPassword }, token);
 export const forgotPassword = (email) => request('POST', '/auth/forgot-password', { email });
+export const verifyPin     = (email, pin) => request('POST', '/auth/verify-pin', { email, pin });
 export const resetPassword  = (email, pin, newPassword) => request('POST', '/auth/reset-password', { email, pin, newPassword });
 
 // ── Admin — Inquiries ──────────────────────────────────────────────────────

@@ -133,20 +133,7 @@ const Projects = () => {
           ))}
         </div>
 
-        <section className="project-stats glass-card">
-          <div className="mini-stat">
-            <h4>400+</h4>
-            <p>Total Projects</p>
-          </div>
-          <div className="mini-stat">
-            <h4>100%</h4>
-            <p>Success Rate</p>
-          </div>
-          <div className="mini-stat">
-            <h4>50+</h4>
-            <p>Government Partners</p>
-          </div>
-        </section>
+
       </div>
     </div>
   );
