@@ -10,13 +10,38 @@ const About = () => {
   const videoRef = useRef(null);
 
   const toggleVideo = () => {
-    if (isPlaying) {
-      videoRef.current.pause();
+    if (!videoRef.current) return;
+
+    if (videoRef.current.paused) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setIsPlaying(true);
+        }).catch(error => {
+          console.error("Video play failed:", error);
+        });
+      }
     } else {
-      videoRef.current.play();
+      videoRef.current.pause();
+      setIsPlaying(false);
     }
-    setIsPlaying(!isPlaying);
   };
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
+
+    return () => {
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
+    };
+  }, []);
 
   const [story, setStory] = useState(null);
   const [founder, setFounder] = useState(null);
@@ -260,30 +285,46 @@ const About = () => {
               </p>
             </div>
           </div>
-          <div className="about-video-space glass-card animate-fade-in">
-            <div className="video-placeholder" onClick={toggleVideo} style={{ cursor: 'pointer' }}>
-              <div className={`video-overlay ${isPlaying ? 'playing' : ''}`}>
-                <button className="video-play-btn large">
-                  {isPlaying ? <Pause size={30} fill="white" /> : <Play size={30} fill="white" />}
-                </button>
+          <div className="about-video-space glass-card animate-fade-in" style={{ padding: 0 }}>
+            <div className="video-placeholder" onClick={toggleVideo} style={{ cursor: 'pointer', height: '100%', minHeight: '380px', position: 'relative' }}>
+              <div className={`video-overlay ${isPlaying ? 'playing' : ''}`} style={{ zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {!isPlaying && (
+                  <div className="play-pulse-container" style={{ pointerEvents: 'none' }}>
+                    <div className="play-pulse"></div>
+                    <button className="video-play-btn large">
+                      <Play size={32} fill="currentColor" />
+                    </button>
+                  </div>
+                )}
+                {isPlaying && (
+                  <div style={{ position: 'absolute', bottom: '1.5rem', right: '1.5rem', pointerEvents: 'none' }}>
+                    <button className="video-play-btn mini" style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Pause size={24} />
+                    </button>
+                  </div>
+                )}
               </div>
+              
               {!isPlaying && (
-                <img
-                  src="/images/it-support.png"
-                  alt="Our Team at Work"
+                <img 
+                  src="/images/it-support.png" 
+                  alt="Video Thumbnail"
                   className="video-thumbnail"
-                  style={{ position: 'absolute', inset: 0, zIndex: 1 }}
-                  loading="lazy"
+                  style={{ position: 'absolute', inset: 0, zIndex: 5, width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               )}
+
               <video
                 ref={videoRef}
                 className="video-element"
                 playsInline
                 loop
-                muted={!isPlaying}
+                muted
+                preload="auto"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               >
-                <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
+                <source src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
               </video>
             </div>
           </div>
