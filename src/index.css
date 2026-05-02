@@ -240,6 +240,14 @@ ul {
   padding: 2rem 0 0.5rem;
 }
 
+.partners-section {
+  padding-bottom: 0.5rem !important;
+}
+
+.home-services-section {
+  padding-top: 1rem !important;
+}
+
 /* Top Bar */
 .top-bar {
   background: var(--primary);
@@ -2862,10 +2870,10 @@ textarea:focus {
 
 .overview-selection-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 400px));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 400px));
   justify-content: center;
-  gap: 2.5rem;
-  margin-top: 4rem;
+  gap: 2rem;
+  margin-top: 3rem;
 }
 
 .selection-card {
@@ -3951,6 +3959,17 @@ textarea:focus {
   border-radius: 50%;
   opacity: 0.4;
   animation: pulse-ring 2s infinite;
+}
+
+.responsive-video-box {
+  height: 100%;
+  min-height: 420px;
+}
+
+@media (max-width: 768px) {
+  .responsive-video-box {
+    min-height: 250px;
+  }
 }
 
 @keyframes pulse-ring {

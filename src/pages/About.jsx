@@ -286,7 +286,7 @@ const About = () => {
             </div>
           </div>
           <div className="about-video-space glass-card animate-fade-in" style={{ padding: 0 }}>
-            <div className="video-placeholder" onClick={toggleVideo} style={{ cursor: 'pointer', height: '100%', minHeight: '380px', position: 'relative' }}>
+            <div className="video-placeholder responsive-video-box" onClick={toggleVideo} style={{ cursor: 'pointer', position: 'relative' }}>
               <div className={`video-overlay ${isPlaying ? 'playing' : ''}`} style={{ zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {!isPlaying && (
                   <div className="play-pulse-container" style={{ pointerEvents: 'none' }}>
