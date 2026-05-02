@@ -148,6 +148,7 @@ const TeamManager = ({ token }) => {
               } catch (err) { setMsg('Upload failed: ' + err.message); }
             }} style={{ display: 'none' }} />
           </label>
+          <span style={{ fontSize: '0.75rem', color: '#9ca3af', whiteSpace: 'nowrap' }}>Recommended: 800x600px, Max 2MB</span>
         </div>
       </div>
 

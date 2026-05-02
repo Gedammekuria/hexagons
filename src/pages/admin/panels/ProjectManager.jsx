@@ -157,6 +157,7 @@ const ProjectManager = ({ token }) => {
               <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Upload Image</span>
               <input type="file" onChange={handleImageUpload} style={{ display: 'none' }} accept="image/*" />
             </label>
+            <span style={{ fontSize: '0.75rem', color: '#9ca3af', whiteSpace: 'nowrap' }}>Recommended: 800x600px, Max 2MB</span>
           </div>
         </div>
         <div>

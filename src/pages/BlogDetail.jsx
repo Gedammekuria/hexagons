@@ -51,22 +51,18 @@ const BlogDetail = () => {
         </Link>
 
         <article className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-          {post.image && (
-            <div style={{ width: '100%', height: '400px', overflow: 'hidden' }}>
-              <img src={post.image} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-          )}
+
           
           <div style={{ padding: '3rem' }}>
-            <div style={{ display: 'flex', gap: '1.5rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '1.5rem', color: '#6b7280', fontSize: '0.9rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Calendar size={16} /> {new Date(post.created_at).toLocaleDateString()}</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><User size={16} /> {post.author}</span>
-              <span style={{ padding: '0.2rem 0.8rem', background: 'rgba(0,179,122,0.2)', color: '#00b37a', borderRadius: '999px', fontWeight: 600 }}>{post.category}</span>
+              <span style={{ padding: '0.2rem 0.8rem', background: 'rgba(0,179,122,0.1)', color: '#00b37a', borderRadius: '999px', fontWeight: 600 }}>{post.category}</span>
             </div>
 
-            <h1 style={{ fontSize: '2.5rem', color: '#ffffff', marginBottom: '1.5rem', lineHeight: 1.2 }}>{post.title}</h1>
+            <h1 style={{ fontSize: '2.5rem', color: '#111827', marginBottom: '1.5rem', lineHeight: 1.2, fontWeight: 700 }}>{post.title}</h1>
             
-            <div className="blog-body" style={{ color: 'rgba(255,255,255,0.8)', lineHeight: 1.8, fontSize: '1.1rem' }}>
+            <div className="blog-body" style={{ color: '#374151', lineHeight: 1.8, fontSize: '1.1rem' }}>
               {post.body.split('\n').map((para, i) => (
                 <p key={i} style={{ marginBottom: '1.5rem' }}>{para}</p>
               ))}

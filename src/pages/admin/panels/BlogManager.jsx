@@ -143,6 +143,7 @@ const BlogManager = ({ token }) => {
               } catch (err) { setMsg('Failed: ' + err.message); }
             }} style={{ display: 'none' }} />
           </label>
+          <span style={{ fontSize: '0.75rem', color: '#9ca3af', whiteSpace: 'nowrap' }}>Recommended: 800x600px, Max 2MB</span>
         </div>
       </div>
 
@@ -155,10 +156,6 @@ const BlogManager = ({ token }) => {
       </div>
 
       <div style={{ marginBottom: '0.9rem' }}>
-        <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>Excerpt</label>
-        <textarea rows={3} value={form.excerpt || ''} onChange={e => set('excerpt', e.target.value)} style={ta} />
-      </div>
-      <div>
         <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>Body Content</label>
         <textarea rows={14} value={form.body || ''} onChange={e => set('body', e.target.value)} style={ta} />
       </div>

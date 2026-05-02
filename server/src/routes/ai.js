@@ -22,12 +22,27 @@ router.post('/chat', async (req, res) => {
     let servicesContext = '';
     
     try {
-      const [settingsRes, servicesRes] = await Promise.all([
+      const [settingsRes, servicesRes, projectsRes, blogRes] = await Promise.all([
         db.query('SELECT key, value FROM site_settings'),
-        db.query('SELECT title, description, tagline FROM services WHERE active = 1')
+        db.query('SELECT title, tagline FROM services WHERE active = 1'),
+        db.query('SELECT title, category FROM projects LIMIT 10'),
+        db.query('SELECT title FROM blog_posts WHERE status = \'published\' ORDER BY created_at DESC LIMIT 5')
       ]);
       for (const row of settingsRes.rows) settings[row.key] = row.value;
-      servicesContext = servicesRes.rows.map(s => `- ${s.title}: ${s.tagline}. ${s.description.substring(0, 150)}...`).join('\n');
+      servicesContext = servicesRes.rows.map(s => `- ${s.title}: ${s.tagline}`).join('\n');
+      const projectContext = projectsRes.rows.map(p => `- ${p.title} (${p.category})`).join('\n');
+      const blogContext = blogRes.rows.map(b => `- ${b.title}`).join('\n');
+      
+      settings.full_context = `
+Core Services:
+${servicesContext}
+
+Recent Projects:
+${projectContext}
+
+Latest Insights (Blog):
+${blogContext}
+      `;
     } catch (dbError) {
       console.warn('[AI DB Context Error]:', dbError.message);
     }
@@ -41,12 +56,13 @@ Company Info:
 - Email: ${settings.email || 'info@hexagonview.com'}
 - Experience: ${settings.experience_years || '15+'} years in industry.
 
-Our Core Services:
-${servicesContext || '- IT Support, Networking, Security, Cybersecurity, Digital Marketing, Software Development, Web Hosting.'}
+Detailed Portfolio & Insights:
+${settings.full_context || 'Specialized in Software Development, Networking, and Cybersecurity.'}
 
 Guidelines:
 - Be professional, helpful, and concise.
 - Use bullet points for lists.
+- If asked about specific projects or blog posts, reference the information provided above.
 - If asked about pricing, explain we offer custom quotes based on project complexity.
 - Encourage users to contact us at ${settings.phone || '+251-944161572'} or ${settings.email || 'info@hexagonview.com'} for consultations.
 - Act as Hexagon's digital representative, not as an AI model.`;

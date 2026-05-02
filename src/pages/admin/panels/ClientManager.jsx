@@ -106,6 +106,7 @@ const ClientManager = ({ token }) => {
                 } catch (err) { setMsg('Error: ' + err.message); }
               }} style={{ display: 'none' }} />
             </label>
+            <span style={{ fontSize: '0.75rem', color: '#9ca3af', whiteSpace: 'nowrap' }}>Recommended: 800x600px, Max 2MB</span>
           </div>
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#6b7280', fontSize: '0.9rem' }}>

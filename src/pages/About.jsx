@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Target, Eye, BookMarked, Zap, Users, Scale, Lock, Handshake, Monitor, Network, Code, Database, Globe, Play, Pause, Quote } from 'lucide-react';
+import { Target, Eye, BookMarked, Zap, Users, Scale, Lock, Handshake, Monitor, Network, Code, Database, Globe, Play, Pause, Quote, MapPin, Briefcase, Shield } from 'lucide-react';
 import { getContent } from '../api/client';
 import SEO from '../components/SEO';
 import { useSettings } from '../context/SettingsContext';
@@ -22,7 +22,7 @@ const About = () => {
   const [founder, setFounder] = useState(null);
   const [vm, setVm] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     getContent('about', 'story').then(res => setStory(res.data)).catch(() => {});
     getContent('about', 'founder').then(res => setFounder(res.data)).catch(() => {});
     getContent('about', 'vision_mission').then(res => setVm(res.data)).catch(() => {});
@@ -38,7 +38,9 @@ const About = () => {
         <header className="page-header center">
           <h1 className="section-title">{story?.title || 'About Hexagon'}</h1>
         </header>
-        <section className="about-content grid-2">
+
+
+        <section className="about-content">
           <div className="about-text animate-fade-in">
             <span className="badge">{settings?.experience_years || '15+'} Years in Business</span>
             <p>
@@ -92,10 +94,87 @@ const About = () => {
               </div>
             </div>
           </div>
-          <div className="about-image glass-card">
-            <div className="hexagon-bg-decoration"></div>
-            <img src="/hero.png" alt="Office Culture" loading="lazy" />
-          </div>
+
+            <div className="vision-grid mt-5">
+              <div className="glass-card vision-card">
+                <Target size={40} className="text-secondary" />
+                <h3>Our Mission</h3>
+                <ul className="core-values-list">
+                  <li>
+                    <div className="hexagon-icon-small"><Target size={14} /></div>
+                    <span>{vm?.mission_text || 'Provide quality IT and communication consulting to businesses in Ethiopia and beyond'}</span>
+                  </li>
+                  <li>
+                    <div className="hexagon-icon-small"><Users size={14} /></div>
+                    <span>Serve an ever-broadening group of quality businesses and industries</span>
+                  </li>
+                  <li>
+                    <div className="hexagon-icon-small"><Handshake size={14} /></div>
+                    <span>Reach out to the Ethiopian people in positive, life-improving ways</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="glass-card vision-card">
+                <Eye size={40} className="text-primary" />
+                <h3>Our Vision</h3>
+                <ul className="core-values-list">
+                  <li>
+                    <div className="hexagon-icon-small"><Eye size={14} /></div>
+                    <span>{vm?.vision_text || 'Provide cutting-edge service and products for all the disciplines of information technology and communication'}</span>
+                  </li>
+                  <li>
+                    <div className="hexagon-icon-small"><Monitor size={14} /></div>
+                    <span>Computer and network maintenance and repair</span>
+                  </li>
+                  <li>
+                    <div className="hexagon-icon-small"><Network size={14} /></div>
+                    <span>Network planning and construction</span>
+                  </li>
+                  <li>
+                    <div className="hexagon-icon-small"><Code size={14} /></div>
+                    <span>Software development</span>
+                  </li>
+                  <li>
+                    <div className="hexagon-icon-small"><Database size={14} /></div>
+                    <span>Data recovery</span>
+                  </li>
+                  <li>
+                    <div className="hexagon-icon-small"><Globe size={14} /></div>
+                    <span>Digital marketing and web design</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="glass-card vision-card">
+                <BookMarked size={40} style={{ color: '#10b981' }} />
+                <h3>Core Values</h3>
+                <ul className="core-values-list">
+                  <li>
+                    <div className="hexagon-icon-small">
+                      <Zap size={14} />
+                    </div>
+                    <span>Prompt and efficient delivery of products and services</span>
+                  </li>
+                  <li>
+                    <div className="hexagon-icon-small">
+                      <Users size={14} />
+                    </div>
+                    <span>Solid and dependable teamwork</span>
+                  </li>
+                  <li>
+                    <div className="hexagon-icon-small">
+                      <Scale size={14} />
+                    </div>
+                    <span>Professional, personal and fiscal discipline based on the highest standard of ethical business practice</span>
+                  </li>
+                  <li>
+                    <div className="hexagon-icon-small">
+                      <Lock size={14} />
+                    </div>
+                    <span>Confidentiality: Your data and other confidential information are safe with us – We guarantee it!</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
         </section>
 
         <section className="founder-section grid-2">
@@ -126,88 +205,7 @@ const About = () => {
           </div>
         </section>
 
-        <section className="vision-mission-section">
-          <div className="vision-grid">
-            <div className="glass-card vision-card">
-              <Target size={40} className="text-secondary" />
-              <h3>Our Mission</h3>
-              <ul className="core-values-list">
-                <li>
-                  <div className="hexagon-icon-small"><Target size={14} /></div>
-                  <span>{vm?.mission_text || 'Provide quality IT and communication consulting to businesses in Ethiopia and beyond'}</span>
-                </li>
-                <li>
-                  <div className="hexagon-icon-small"><Users size={14} /></div>
-                  <span>Serve an ever-broadening group of quality businesses and industries</span>
-                </li>
-                <li>
-                  <div className="hexagon-icon-small"><Handshake size={14} /></div>
-                  <span>Reach out to the Ethiopian people in positive, life-improving ways</span>
-                </li>
-              </ul>
-            </div>
-            <div className="glass-card vision-card">
-              <Eye size={40} className="text-primary" />
-              <h3>Our Vision</h3>
-              <ul className="core-values-list">
-                <li>
-                  <div className="hexagon-icon-small"><Eye size={14} /></div>
-                  <span>{vm?.vision_text || 'Provide cutting-edge service and products for all the disciplines of information technology and communication'}</span>
-                </li>
-                <li>
-                  <div className="hexagon-icon-small"><Monitor size={14} /></div>
-                  <span>Computer and network maintenance and repair</span>
-                </li>
-                <li>
-                  <div className="hexagon-icon-small"><Network size={14} /></div>
-                  <span>Network planning and construction</span>
-                </li>
-                <li>
-                  <div className="hexagon-icon-small"><Code size={14} /></div>
-                  <span>Software development</span>
-                </li>
-                <li>
-                  <div className="hexagon-icon-small"><Database size={14} /></div>
-                  <span>Data recovery</span>
-                </li>
-                <li>
-                  <div className="hexagon-icon-small"><Globe size={14} /></div>
-                  <span>Digital marketing and web design</span>
-                </li>
-              </ul>
-            </div>
-            <div className="glass-card vision-card">
-              <BookMarked size={40} style={{ color: '#10b981' }} />
-              <h3>Core Values</h3>
-              <ul className="core-values-list">
-                <li>
-                  <div className="hexagon-icon-small">
-                    <Zap size={14} />
-                  </div>
-                  <span>Prompt and efficient delivery of products and services</span>
-                </li>
-                <li>
-                  <div className="hexagon-icon-small">
-                    <Users size={14} />
-                  </div>
-                  <span>Solid and dependable teamwork</span>
-                </li>
-                <li>
-                  <div className="hexagon-icon-small">
-                    <Scale size={14} />
-                  </div>
-                  <span>Professional, personal and fiscal discipline based on the highest standard of ethical business practice</span>
-                </li>
-                <li>
-                  <div className="hexagon-icon-small">
-                    <Lock size={14} />
-                  </div>
-                  <span>Confidentiality: Your data and other confidential information are safe with us – We guarantee it!</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </section>
+
 
         <section className="who-we-are-section grid-2 section-padding">
           <div className="about-text animate-fade-in">

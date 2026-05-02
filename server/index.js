@@ -52,15 +52,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
 }));
 
-const limiter = rateLimit({
+const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 500, // increased from 100 for dev environment
-  standardHeaders: true,
-  legacyHeaders: false,
+  max: 300, 
   message: { message: 'Too many requests, please try again later.' }
 });
 
-app.use('/api/', limiter);
+const strictLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 50, // Balanced limit for security and usability
+  message: { message: 'Too many attempts from this IP. Please try again in an hour.' }
+});
+
+app.use('/api/', generalLimiter);
+app.use('/api/auth', strictLimiter);
+app.use('/api/inquiries', strictLimiter);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Code, Globe, Shield, Database, Layout, Users, X, CheckCircle2, Monitor, ShieldCheck, Palette, Server, Lock, Flame, Network, Camera, Fingerprint, Zap, Headset, Wrench, Briefcase, Settings, Smartphone, LayoutDashboard, Printer, Megaphone, PenTool, ChevronLeft, ChevronRight, MapPin, Phone, Tv, Wifi, Share2, Search, Folder } from 'lucide-react';
+import { ArrowRight, Code, Globe, Shield, Database, Layout, Users, X, CheckCircle2, Monitor, ShieldCheck, Palette, Server, Lock, Flame, Network, Camera, Fingerprint, Zap, Headset, Wrench, Briefcase, Settings, Smartphone, LayoutDashboard, Printer, Megaphone, PenTool, ChevronLeft, ChevronRight, MapPin, Phone, Tv, Wifi, Share2, Search, Folder, Eye } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { getContent, getProjects, getImageUrl } from '../api/client';
 import SEO from '../components/SEO';
@@ -10,17 +10,32 @@ import { useSettings } from '../context/SettingsContext';
 
 const ProjectCard = ({ title, category, description, tags, image, link, show_link, icon: Icon }) => (
   <div className="glass-card project-card animate-fade-in">
-    {image ? (
-      <img
-        src={getImageUrl(image)}
-        alt={title}
-        className="project-card-img"
-      />
-    ) : (
-      <div className="project-icon-placeholder">
-        <Icon size={36} className="text-primary" />
+    <div className="project-image-container">
+      {image ? (
+        <img
+          src={getImageUrl(image)}
+          alt={title}
+          className="project-card-img"
+        />
+      ) : (
+        <div className="project-icon-placeholder">
+          <Icon size={36} className="text-primary" />
+        </div>
+      )}
+      <div className="project-overlay">
+        {link ? (
+          <a href={link} target="_blank" rel="noopener noreferrer" className="overlay-content" style={{ textDecoration: 'none' }}>
+            <Eye size={28} />
+            <span>View Project</span>
+          </a>
+        ) : (
+          <div className="overlay-content">
+            <Icon size={28} />
+            <span>{category}</span>
+          </div>
+        )}
       </div>
-    )}
+    </div>
     <div className="project-card-body">
       <span className="project-category">{category}</span>
       <h3>{title}</h3>
@@ -41,6 +56,22 @@ const ProjectCard = ({ title, category, description, tags, image, link, show_lin
   </div>
 );
 
+const SubServiceList = ({ items }) => (
+  <div className="sub-service-list" style={{ marginLeft: '1rem' }}>
+    {items.map((item, i) => {
+      const Icon = item.icon;
+      return (
+        <div key={i} className="sub-service-item-simple" style={{ padding: '0.1rem 0.4rem', fontSize: '0.8rem' }}>
+          <div className="hexagon-icon-small" style={{ width: '18px', height: '18px' }}>
+            <Icon size={12} />
+          </div>
+          <span>{item.title}</span>
+        </div>
+      );
+    })}
+  </div>
+);
+
 const Home = () => {
   const { settings } = useSettings();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -57,21 +88,6 @@ const Home = () => {
     return Folder;
   };
 
-  const SubServiceList = ({ items }) => (
-    <div className="sub-service-list" style={{ marginLeft: '2rem' }}>
-      {items.map((item, i) => {
-        const Icon = item.icon;
-        return (
-          <div key={i} className="sub-service-item-simple">
-            <div className="hexagon-icon-small">
-              <Icon size={16} />
-            </div>
-            <span>{item.title}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
 
   const handleScrollToService = (e, id) => {
     if (e) e.preventDefault();
@@ -335,112 +351,126 @@ const Home = () => {
 
           <div className="services-grid-main mt-5">
             <section id="it-support" className="service-section">
-              <div className="service-category-info glass-card" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
-                <img src="/images/it-support.png" alt="IT Support" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} loading="lazy" />
-                <div style={{ padding: '0.5rem 1.5rem 1.5rem 1.5rem' }}>
-                  <h2 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem', whiteSpace: 'nowrap' }}>IT Support and Consulting</h2>
-                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '1.5rem' }}>
-                    {servIt?.text || "Our IT Support and Consulting services provide the technical backbone your business needs to excel. We prevent problems through proactive management and expert strategic guidance."}
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                <div className="service-icon-main it-icon" style={{ marginBottom: '0.15rem', background: 'rgba(37, 99, 235, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
+                  <ShieldCheck className="text-primary" size={32} style={{ transition: 'all 0.3s ease' }} />
+                </div>
+                <div style={{ width: '100%' }}>
+                  <h2 style={{ marginTop: 0, marginBottom: '0.15rem', fontSize: '1.35rem', lineHeight: '1.2' }}>IT Support and Consulting</h2>
+                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '0.75rem', fontSize: '1rem' }}>
+                    {servIt?.text || "Our IT Support and Consulting services provide technical backbone and expert strategic guidance."}
                   </p>
                   <SubServiceList items={itSupportServices} />
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-                    <Link to="/services/it-support" className="btn-text">View Detail <ArrowRight size={16} /></Link>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                    <Link to="/services/it-support" className="btn-text" style={{ fontSize: '0.85rem' }}>View Detail <ArrowRight size={14} /></Link>
                   </div>
                 </div>
               </div>
             </section>
 
             <section id="networking" className="service-section">
-              <div className="service-category-info glass-card reverse" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
-                <img src="/images/networking.png" alt="Networking" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} loading="lazy" />
-                <div style={{ padding: '0.5rem 1.5rem 1.5rem 1.5rem' }}>
-                  <h2 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem', whiteSpace: 'nowrap' }}>Networking and Infrastructure</h2>
-                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '1.5rem' }}>
-                    Enterprise-grade network infrastructure design and implementation tailored to your organization's current needs while being engineered to scale effortlessly as you grow.
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                <div className="service-icon-main net-icon" style={{ marginBottom: '0.15rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
+                  <Network className="text-secondary" size={32} style={{ transition: 'all 0.3s ease' }} />
+                </div>
+                <div style={{ width: '100%' }}>
+                  <h2 style={{ marginTop: 0, marginBottom: '0.15rem', fontSize: '1.35rem', lineHeight: '1.2' }}>Networking & Infrastructure</h2>
+                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '0.75rem', fontSize: '1rem' }}>
+                    Enterprise-grade network design and implementation tailored to scale effortlessly.
                   </p>
                   <SubServiceList items={networkingServices} />
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-                    <Link to="/services/networking" className="btn-text">View Detail <ArrowRight size={16} /></Link>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                    <Link to="/services/networking" className="btn-text" style={{ fontSize: '0.85rem' }}>View Detail <ArrowRight size={14} /></Link>
                   </div>
                 </div>
               </div>
             </section>
 
             <section id="security" className="service-section">
-              <div className="service-category-info glass-card" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
-                <img src="/images/security.png" alt="Security" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} loading="lazy" />
-                <div style={{ padding: '0.5rem 1.5rem 1.5rem 1.5rem' }}>
-                  <h2 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem', whiteSpace: 'nowrap' }}>Security and Surveillance</h2>
-                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '1.5rem' }}>
-                    Advanced physical security and surveillance systems to protect your people, property, and proprietary data with state-of-the-art hardware and intelligent digital monitoring.
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                <div className="service-icon-main sec-icon" style={{ marginBottom: '0.15rem', background: 'rgba(236, 72, 153, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
+                  <Lock className="text-accent" size={32} style={{ transition: 'all 0.3s ease' }} />
+                </div>
+                <div style={{ width: '100%' }}>
+                  <h2 style={{ marginTop: 0, marginBottom: '0.15rem', fontSize: '1.35rem', lineHeight: '1.2' }}>Security and Surveillance</h2>
+                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '0.75rem', fontSize: '1rem' }}>
+                    Advanced physical security systems to protect your people, property, and data.
                   </p>
                   <SubServiceList items={securityServices} />
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-                    <Link to="/services/security" className="btn-text">View Detail <ArrowRight size={16} /></Link>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                    <Link to="/services/security" className="btn-text" style={{ fontSize: '0.85rem' }}>View Detail <ArrowRight size={14} /></Link>
                   </div>
                 </div>
               </div>
             </section>
 
             <section id="cyber-security" className="service-section">
-              <div className="service-category-info glass-card reverse" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
-                <img src="/images/cybersecurity.png" alt="Cyber Security" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} loading="lazy" />
-                <div style={{ padding: '0.5rem 1.5rem 1.5rem 1.5rem' }}>
-                  <h2 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem', whiteSpace: 'nowrap' }}>Cybersecurity and Antivirus</h2>
-                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '1.5rem' }}>
-                    Comprehensive digital protection for your business assets. As authorized suppliers, we offer world-class cybersecurity solutions designed to protect your business from sophisticated digital threats.
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                <div className="service-icon-main cyber-icon" style={{ marginBottom: '0.15rem', background: 'rgba(37, 99, 235, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
+                  <Server className="text-primary" size={32} style={{ transition: 'all 0.3s ease' }} />
+                </div>
+                <div style={{ width: '100%' }}>
+                  <h2 style={{ marginTop: 0, marginBottom: '0.15rem', fontSize: '1.35rem', lineHeight: '1.2' }}>Cybersecurity and Antivirus</h2>
+                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '0.75rem', fontSize: '1rem' }}>
+                    Authorized world-class cybersecurity solutions designed to protect from sophisticated threats.
                   </p>
                   <SubServiceList items={cyberServices} />
                   <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-                    <Link to="/services/cybersecurity" className="btn-text">View Detail <ArrowRight size={16} /></Link>
+                    <Link to="/services/cybersecurity" className="btn-text" style={{ fontSize: '0.85rem' }}>View Detail <ArrowRight size={14} /></Link>
                   </div>
                 </div>
               </div>
             </section>
 
             <section id="marketing-graphics" className="service-section">
-              <div className="service-category-info glass-card" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
-                <img src="/images/digital-marketing.png" alt="Digital Marketing" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} loading="lazy" />
-                <div style={{ padding: '0.5rem 1.5rem 1.5rem 1.5rem' }}>
-                  <h2 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem', whiteSpace: 'nowrap' }}>Digital Marketing and Graphics</h2>
-                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '1.5rem' }}>
-                    Creative design and strategic digital marketing solutions to elevate your brand. We help you connect with your audience and drive meaningful growth in the digital landscape.
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                <div className="service-icon-main mkt-icon" style={{ marginBottom: '0.15rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
+                  <Palette className="text-secondary" size={32} style={{ transition: 'all 0.3s ease' }} />
+                </div>
+                <div style={{ width: '100%' }}>
+                  <h2 style={{ marginTop: 0, marginBottom: '0.15rem', fontSize: '1.35rem', lineHeight: '1.2' }}>Digital Marketing & Graphics</h2>
+                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '0.75rem', fontSize: '1rem' }}>
+                    Creative design and strategic digital marketing solutions to elevate your brand.
                   </p>
                   <SubServiceList items={marketingGraphicsServices} />
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-                    <Link to="/services/marketing-graphics" className="btn-text">View Detail <ArrowRight size={16} /></Link>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                    <Link to="/services/marketing-graphics" className="btn-text" style={{ fontSize: '0.85rem' }}>View Detail <ArrowRight size={14} /></Link>
                   </div>
                 </div>
               </div>
             </section>
 
             <section id="digital-services" className="service-section">
-              <div className="service-category-info glass-card reverse" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
-                <img src="/images/digital-services.png" alt="Digital Services" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} loading="lazy" />
-                <div style={{ padding: '0.5rem 1.5rem 1.5rem 1.5rem' }}>
-                  <h2 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem', whiteSpace: 'nowrap' }}>Software and Web Development</h2>
-                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '1.5rem' }}>
-                    {servDig?.text || "We transform your business vision into high-performance digital products. Our digital services team builds scalable websites, mobile applications, and enterprise software."}
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                <div className="service-icon-main dig-icon" style={{ marginBottom: '0.15rem', background: 'rgba(37, 99, 235, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
+                  <Monitor className="text-primary" size={32} style={{ transition: 'all 0.3s ease' }} />
+                </div>
+                <div style={{ width: '100%' }}>
+                  <h2 style={{ marginTop: 0, marginBottom: '0.15rem', fontSize: '1.35rem', lineHeight: '1.2' }}>Software & Web Development</h2>
+                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '0.75rem', fontSize: '1rem' }}>
+                    {servDig?.text || "Transforming your business vision into high-performance digital products."}
                   </p>
                   <SubServiceList items={digitalServices} />
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-                    <Link to="/services/digital-services" className="btn-text">View Detail <ArrowRight size={16} /></Link>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                    <Link to="/services/digital-services" className="btn-text" style={{ fontSize: '0.85rem' }}>View Detail <ArrowRight size={14} /></Link>
                   </div>
                 </div>
               </div>
             </section>
 
             <section id="web-hosting" className="service-section">
-              <div className="service-category-info glass-card" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
-                <img src="/images/networking.png" alt="Web Hosting" style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} loading="lazy" />
-                <div style={{ padding: '0.5rem 1.5rem 1.5rem 1.5rem' }}>
-                  <h2 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem', whiteSpace: 'nowrap' }}>Web Hosting and Domains</h2>
-                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '1.5rem' }}>
-                    Secure and reliable hosting solutions for your digital presence. Our hosting provides enterprise-grade performance, uptime guarantees, and local technical support.
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                <div className="service-icon-main host-icon" style={{ marginBottom: '0.15rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
+                  <Globe className="text-secondary" size={32} style={{ transition: 'all 0.3s ease' }} />
+                </div>
+                <div style={{ width: '100%' }}>
+                  <h2 style={{ marginTop: 0, marginBottom: '0.15rem', fontSize: '1.35rem', lineHeight: '1.2' }}>Web Hosting and Domains</h2>
+                  <p style={{ lineHeight: '1.6', color: '#4b5563', marginBottom: '0.75rem', fontSize: '1rem' }}>
+                    Secure and reliable hosting solutions for your digital presence with local support.
                   </p>
                   <SubServiceList items={webHostingServices} />
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-                    <Link to="/services/web-hosting" className="btn-text">View Detail <ArrowRight size={16} /></Link>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                    <Link to="/services/web-hosting" className="btn-text" style={{ fontSize: '0.85rem' }}>View Detail <ArrowRight size={14} /></Link>
                   </div>
                 </div>
               </div>
