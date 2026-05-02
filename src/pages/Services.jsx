@@ -11,6 +11,59 @@ import {
 import { getServices } from '../api/client';
 import * as LucideIcons from 'lucide-react';
 
+const ServiceOverviewSkeleton = () => (
+  <div className="services-overview-page">
+    <div className="container">
+      <header className="page-header center">
+        <div className="skeleton skeleton-text short" style={{ height: '1.5rem', width: '100px', borderRadius: '1rem', margin: '0 auto 1rem' }}></div>
+        <div className="skeleton skeleton-title" style={{ margin: '0 auto 1.5rem' }}></div>
+        <div className="skeleton skeleton-text" style={{ width: '40%', margin: '0 auto' }}></div>
+      </header>
+      <div className="overview-selection-grid mt-4">
+        {[1, 2, 3, 4, 5, 6].map(i => (
+          <div key={i} className="selection-card glass-card">
+            <div className="skeleton" style={{ width: '64px', height: '64px', borderRadius: '1rem', marginBottom: '1.5rem' }}></div>
+            <div className="skeleton skeleton-text" style={{ width: '70%', height: '1.5rem', marginBottom: '1rem' }}></div>
+            <div className="skeleton skeleton-text"></div>
+            <div className="skeleton skeleton-text short"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const ServiceDetailSkeleton = () => (
+  <div className="service-single-page">
+    <section className="service-hero" style={{ background: 'var(--bg-light)', padding: '6rem 0 4rem' }}>
+      <div className="container">
+        <div className="service-hero-content">
+          <div className="skeleton skeleton-text short" style={{ height: '1.5rem', width: '120px', borderRadius: '1rem', marginBottom: '1.5rem' }}></div>
+          <div className="skeleton skeleton-title" style={{ width: '60%', height: '3rem', margin: '0 0 1.5rem 0' }}></div>
+          <div className="skeleton skeleton-text" style={{ width: '80%' }}></div>
+          <div className="skeleton skeleton-text" style={{ width: '60%' }}></div>
+        </div>
+      </div>
+    </section>
+    <section className="service-details-section section-padding">
+      <div className="container">
+        <div className="service-overview-layout">
+          <div className="service-overview-text">
+            <div className="skeleton skeleton-title" style={{ width: '30%', margin: '0 0 1.5rem 0' }}></div>
+            <div className="skeleton skeleton-text"></div>
+            <div className="skeleton skeleton-text"></div>
+            <div className="skeleton skeleton-text"></div>
+            <div className="skeleton skeleton-text short"></div>
+          </div>
+          <div className="service-overview-image">
+            <div className="skeleton" style={{ width: '100%', height: '350px', borderRadius: '1.5rem' }}></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+);
+
 const Services = () => {
   const { serviceId } = useParams();
   const id = serviceId; // Might be undefined
@@ -29,7 +82,10 @@ const Services = () => {
     return Icon;
   };
 
-  if (loading) return <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LucideIcons.Loader2 className="animate-spin" /></div>;
+  if (loading) {
+    return id ? <ServiceDetailSkeleton /> : <ServiceOverviewSkeleton />;
+  }
+
 
   const currentService = services.find(s => s.slug === id);
   
@@ -66,15 +122,21 @@ const Services = () => {
   }
 
   const s = currentService;
-  const Icon = getIcon(s.icon_name);
 
   return (
     <div className="service-single-page">
       {/* Service Hero */}
       <section className="service-hero" style={{ '--service-color': s.color }}>
         <div className="container">
-          <div className="service-hero-content animate-fade-in">
+          <div className="breadcrumbs animate-fade-in" style={{ marginBottom: '2rem', fontSize: '0.9rem', display: 'flex', gap: '0.6rem', alignItems: 'center', fontWeight: '500' }}>
+            <Link to="/" style={{ textDecoration: 'none', color: 'inherit', opacity: 0.7, transition: 'opacity 0.3s' }} onMouseOver={e => e.target.style.opacity = 1} onMouseOut={e => e.target.style.opacity = 0.7}>Home</Link>
+            <span style={{ opacity: 0.4 }}>/</span>
+            <Link to="/services" style={{ textDecoration: 'none', color: 'inherit', opacity: 0.7, transition: 'opacity 0.3s' }} onMouseOver={e => e.target.style.opacity = 1} onMouseOut={e => e.target.style.opacity = 0.7}>Services</Link>
+            <span style={{ opacity: 0.4 }}>/</span>
+            <span style={{ color: 'inherit', opacity: 0.95 }}>{s.title}</span>
+          </div>
 
+          <div className="service-hero-content animate-fade-in">
             <span className="badge">Service Details</span>
             <h1>{s.title}</h1>
             <p className="lead">{s.tagline}</p>

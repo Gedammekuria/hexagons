@@ -57,12 +57,12 @@ const ProjectCard = ({ title, category, description, tags, image, link, show_lin
 );
 
 const SubServiceList = ({ items }) => (
-  <div className="sub-service-list" style={{ marginLeft: '1rem' }}>
+  <div className="sub-service-list" style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', margin: '0 auto' }}>
     {items.map((item, i) => {
       const Icon = item.icon;
       return (
-        <div key={i} className="sub-service-item-simple" style={{ padding: '0.1rem 0.4rem', fontSize: '0.8rem' }}>
-          <div className="hexagon-icon-small" style={{ width: '18px', height: '18px' }}>
+        <div key={i} className="sub-service-item-simple" style={{ padding: '0.15rem 0.6rem', fontSize: '0.9rem', marginBottom: '2px' }}>
+          <div className="hexagon-icon-small" style={{ width: '20px', height: '20px' }}>
             <Icon size={12} />
           </div>
           <span>{item.title}</span>
@@ -72,10 +72,25 @@ const SubServiceList = ({ items }) => (
   </div>
 );
 
+const ProjectSkeleton = () => (
+  <div className="skeleton-card">
+    <div className="skeleton skeleton-img"></div>
+    <div className="skeleton-body">
+      <div className="skeleton skeleton-text" style={{ width: '40%' }}></div>
+      <div className="skeleton skeleton-title"></div>
+      <div className="skeleton skeleton-text"></div>
+      <div className="skeleton skeleton-text short"></div>
+      <div className="skeleton skeleton-text" style={{ marginTop: '1.5rem', width: '30%', marginInline: 'auto' }}></div>
+    </div>
+  </div>
+);
+
 const Home = () => {
   const { settings } = useSettings();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredProjects, setFeaturedProjects] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [activeServiceTab, setActiveServiceTab] = useState('it-support');
   const location = useLocation();
 
   const getProjectIcon = (cat) => {
@@ -91,7 +106,8 @@ const Home = () => {
 
   const handleScrollToService = (e, id) => {
     if (e) e.preventDefault();
-    const element = document.getElementById(id);
+    setActiveServiceTab(id);
+    const element = document.getElementById('services-container');
     if (element) {
       const offset = 100;
       const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
@@ -99,12 +115,6 @@ const Home = () => {
         top: elementPosition - offset,
         behavior: 'smooth'
       });
-      
-      const card = element.querySelector('.glass-card');
-      if (card) {
-        card.classList.add('active-highlight');
-        setTimeout(() => card.classList.remove('active-highlight'), 2000);
-      }
     }
   };
 
@@ -209,11 +219,35 @@ const Home = () => {
     // Fetch and filter featured projects
     getProjects().then(all => {
       setFeaturedProjects(all.filter(p => p.featured === 1 || p.featured === true));
-    }).catch(() => {});
+    }).catch(() => {})
+      .finally(() => setLoadingProjects(false));
   }, []);
 
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.15 });
+
+    const initObserver = () => {
+      const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+      revealElements.forEach((el) => observer.observe(el));
+    };
+
+    initObserver();
+    const timeoutId = setTimeout(initObserver, 500);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timeoutId);
+    };
+  }, [featuredProjects, activeServiceTab, overview]);
 
   return (
     <div className="home-page">
@@ -264,94 +298,52 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="overview-section section-padding" style={{ marginTop: '-3rem' }}>
-        <div className="container">
-          <h2 className="section-title">Company Overview</h2>
-          <div className="overview-cards-grid">
-            <div className="overview-item">
-              <div className="overview-number">01</div>
-              <Globe className="text-primary" size={40} />
-              <h3>{overview?.card1_title || "Founded"}</h3>
-              <p>{(overview?.card1_text || `Established in 2009.`).replace(/\b(19|20)\d{2}\b/g, settings?.founded_year || '2009')}</p>
-            </div>
-            <div className="overview-item">
-              <div className="overview-number">02</div>
-              <MapPin className="text-secondary" size={40} />
-              <h3>{overview?.card2_title || "Our Office"}</h3>
-              <p>{overview?.card2_text || settings?.address || "22 Mazoriya, MAF Bldg."}</p>
-            </div>
-            <div className="overview-item">
-              <div className="overview-number">03</div>
-              <Briefcase className="text-accent" size={40} />
-              <h3>{overview?.card3_title || "Experience"}</h3>
-              <p>{(overview?.card3_text || "15+ Years of industry leadership.").replace(/\b\d+\+?\s*[Yy]ears?\b/g, `${settings?.experience_years || '15+'} Years`)}</p>
-            </div>
-            <div className="overview-item">
-              <div className="overview-number">04</div>
-              <Code className="text-primary" size={40} />
-              <h3>Website & Software Projects</h3>
-              <p>{settings?.software_projects || '250+'} Successfully delivered.</p>
-            </div>
-            <div className="overview-item">
-              <div className="overview-number">05</div>
-              <Shield className="text-secondary" size={40} />
-              <h3>Network & Security Projects</h3>
-              <p>{settings?.network_projects || '180+'} Enterprise deployments.</p>
-            </div>
-            <div className="overview-item">
-              <div className="overview-number">06</div>
-              <Users className="text-accent" size={40} />
-              <h3>Employees</h3>
-              <p>{settings?.employees || '50+'} Dedicated professionals.</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <Procedures />
       <Team />
       <Partners />
 
-      <section className="home-services-section section-padding">
+      <section id="services-container" className="home-services-section section-padding">
         <div className="container">
           <header className="page-header center">
-            <h2 className="section-title">Our Services</h2>
+            <h2 className="section-title reveal">Our Services</h2>
           </header>
           
           <div className="services-key-bar">
-            <a href="#it-support" className="key-service-item" onClick={(e) => handleScrollToService(e, 'it-support')}>
+            <button className={`key-service-item ${activeServiceTab === 'it-support' ? 'active-tab' : ''}`} onClick={(e) => handleScrollToService(e, 'it-support')}>
               <div className="service-icon-box"><ShieldCheck className="text-primary" size={32} /></div>
               <span>IT Support</span>
-            </a>
-            <a href="#networking" className="key-service-item" onClick={(e) => handleScrollToService(e, 'networking')}>
+            </button>
+            <button className={`key-service-item ${activeServiceTab === 'networking' ? 'active-tab' : ''}`} onClick={(e) => handleScrollToService(e, 'networking')}>
               <div className="service-icon-box"><Network className="text-secondary" size={32} /></div>
               <span>Networking</span>
-            </a>
-            <a href="#security" className="key-service-item" onClick={(e) => handleScrollToService(e, 'security')}>
+            </button>
+            <button className={`key-service-item ${activeServiceTab === 'security' ? 'active-tab' : ''}`} onClick={(e) => handleScrollToService(e, 'security')}>
               <div className="service-icon-box"><Lock className="text-accent" size={32} /></div>
               <span>Security</span>
-            </a>
-            <a href="#cyber-security" className="key-service-item" onClick={(e) => handleScrollToService(e, 'cyber-security')}>
+            </button>
+            <button className={`key-service-item ${activeServiceTab === 'cyber-security' ? 'active-tab' : ''}`} onClick={(e) => handleScrollToService(e, 'cyber-security')}>
               <div className="service-icon-box"><Server className="text-primary" size={32} /></div>
               <span>Cyber Security</span>
-            </a>
-            <a href="#marketing-graphics" className="key-service-item" onClick={(e) => handleScrollToService(e, 'marketing-graphics')}>
+            </button>
+            <button className={`key-service-item ${activeServiceTab === 'marketing-graphics' ? 'active-tab' : ''}`} onClick={(e) => handleScrollToService(e, 'marketing-graphics')}>
               <div className="service-icon-box"><Palette className="text-secondary" size={32} /></div>
               <span>Digital Marketing</span>
-            </a>
-            <a href="#digital-services" className="key-service-item" onClick={(e) => handleScrollToService(e, 'digital-services')}>
+            </button>
+            <button className={`key-service-item ${activeServiceTab === 'digital-services' ? 'active-tab' : ''}`} onClick={(e) => handleScrollToService(e, 'digital-services')}>
               <div className="service-icon-box"><Monitor className="text-primary" size={32} /></div>
               <span>Software & Web</span>
-            </a>
-            <a href="#web-hosting" className="key-service-item" onClick={(e) => handleScrollToService(e, 'web-hosting')}>
+            </button>
+            <button className={`key-service-item ${activeServiceTab === 'web-hosting' ? 'active-tab' : ''}`} onClick={(e) => handleScrollToService(e, 'web-hosting')}>
               <div className="service-icon-box"><Globe className="text-secondary" size={32} /></div>
               <span>Web Hosting</span>
-            </a>
+            </button>
           </div>
 
-          <div className="services-grid-main mt-5">
+          <div className="services-grid-main mt-5 animate-fade-in" key={activeServiceTab}>
+            {activeServiceTab === 'it-support' && (
             <section id="it-support" className="service-section">
-              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, maxWidth: '850px', margin: '0 auto' }}>
                 <div className="service-icon-main it-icon" style={{ marginBottom: '0.15rem', background: 'rgba(37, 99, 235, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
                   <ShieldCheck className="text-primary" size={32} style={{ transition: 'all 0.3s ease' }} />
                 </div>
@@ -367,9 +359,11 @@ const Home = () => {
                 </div>
               </div>
             </section>
+            )}
 
+            {activeServiceTab === 'networking' && (
             <section id="networking" className="service-section">
-              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, maxWidth: '850px', margin: '0 auto' }}>
                 <div className="service-icon-main net-icon" style={{ marginBottom: '0.15rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
                   <Network className="text-secondary" size={32} style={{ transition: 'all 0.3s ease' }} />
                 </div>
@@ -385,9 +379,11 @@ const Home = () => {
                 </div>
               </div>
             </section>
+            )}
 
+            {activeServiceTab === 'security' && (
             <section id="security" className="service-section">
-              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, maxWidth: '850px', margin: '0 auto' }}>
                 <div className="service-icon-main sec-icon" style={{ marginBottom: '0.15rem', background: 'rgba(236, 72, 153, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
                   <Lock className="text-accent" size={32} style={{ transition: 'all 0.3s ease' }} />
                 </div>
@@ -403,9 +399,11 @@ const Home = () => {
                 </div>
               </div>
             </section>
+            )}
 
+            {activeServiceTab === 'cyber-security' && (
             <section id="cyber-security" className="service-section">
-              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, maxWidth: '850px', margin: '0 auto' }}>
                 <div className="service-icon-main cyber-icon" style={{ marginBottom: '0.15rem', background: 'rgba(37, 99, 235, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
                   <Server className="text-primary" size={32} style={{ transition: 'all 0.3s ease' }} />
                 </div>
@@ -421,9 +419,11 @@ const Home = () => {
                 </div>
               </div>
             </section>
+            )}
 
+            {activeServiceTab === 'marketing-graphics' && (
             <section id="marketing-graphics" className="service-section">
-              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, maxWidth: '850px', margin: '0 auto' }}>
                 <div className="service-icon-main mkt-icon" style={{ marginBottom: '0.15rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
                   <Palette className="text-secondary" size={32} style={{ transition: 'all 0.3s ease' }} />
                 </div>
@@ -439,9 +439,11 @@ const Home = () => {
                 </div>
               </div>
             </section>
+            )}
 
+            {activeServiceTab === 'digital-services' && (
             <section id="digital-services" className="service-section">
-              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, maxWidth: '850px', margin: '0 auto' }}>
                 <div className="service-icon-main dig-icon" style={{ marginBottom: '0.15rem', background: 'rgba(37, 99, 235, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
                   <Monitor className="text-primary" size={32} style={{ transition: 'all 0.3s ease' }} />
                 </div>
@@ -457,9 +459,11 @@ const Home = () => {
                 </div>
               </div>
             </section>
+            )}
 
+            {activeServiceTab === 'web-hosting' && (
             <section id="web-hosting" className="service-section">
-              <div className="service-category-info glass-card service-hover-card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+              <div className="service-category-info glass-card service-hover-card" style={{ padding: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, maxWidth: '850px', margin: '0 auto' }}>
                 <div className="service-icon-main host-icon" style={{ marginBottom: '0.15rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.7rem', borderRadius: '1rem', transition: 'all 0.3s ease' }}>
                   <Globe className="text-secondary" size={32} style={{ transition: 'all 0.3s ease' }} />
                 </div>
@@ -475,11 +479,12 @@ const Home = () => {
                 </div>
               </div>
             </section>
+            )}
           </div>
         </div>
       </section>
 
-      {featuredProjects.length > 0 && (
+      {(loadingProjects || featuredProjects.length > 0) && (
         <section id="featured-projects" className="featured-projects-section section-padding" style={{ background: 'linear-gradient(135deg, #f8fafc, #ffffff)', borderTop: '1px solid rgba(16, 185, 129, 0.1)' }}>
           <div className="container">
             <header className="page-header center">
@@ -488,18 +493,28 @@ const Home = () => {
             </header>
             
             <div className="projects-grid">
-              {featuredProjects.map((project) => (
-                <ProjectCard 
-                  key={project.id} 
-                  {...project} 
-                  icon={getProjectIcon(project.category)} 
-                />
-              ))}
+              {loadingProjects ? (
+                <>
+                  <ProjectSkeleton />
+                  <ProjectSkeleton />
+                  <ProjectSkeleton />
+                </>
+              ) : (
+                featuredProjects.map((project) => (
+                  <ProjectCard 
+                    key={project.id} 
+                    {...project} 
+                    icon={getProjectIcon(project.category)} 
+                  />
+                ))
+              )}
             </div>
             
-            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-              <Link to="/projects" className="btn btn-primary">View More Projects <ArrowRight size={18} /></Link>
-            </div>
+            {!loadingProjects && featuredProjects.length > 0 && (
+              <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                <Link to="/projects" className="btn btn-primary">View More Projects <ArrowRight size={18} /></Link>
+              </div>
+            )}
           </div>
         </section>
       )}

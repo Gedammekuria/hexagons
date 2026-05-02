@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Hexagon, ChevronDown } from 'lucide-react';
+import { Menu, X, Hexagon, ChevronDown, ShieldCheck, Network, Lock, Server, Palette, Monitor, Globe } from 'lucide-react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,13 +22,13 @@ const Navbar = () => {
       name: 'Services', 
       path: '/services/it-support',
       dropdown: [
-        { name: 'IT Support and Consulting', path: '/services/it-support' },
-        { name: 'Networking and Infrastructure', path: '/services/networking' },
-        { name: 'Security and Surveillance', path: '/services/security' },
-        { name: 'Cybersecurity & Antivirus', path: '/services/cybersecurity' },
-        { name: 'Digital Marketing and Graphics', path: '/services/marketing-graphics' },
-        { name: 'Software and Web Development', path: '/services/digital-services' },
-        { name: 'Web Hosting and Domains', path: '/services/web-hosting' },
+        { name: 'IT Support & Consulting', desc: 'Expert technical guidance and support', path: '/services/it-support', icon: ShieldCheck },
+        { name: 'Networking & Infrastructure', desc: 'Enterprise network design & scale', path: '/services/networking', icon: Network },
+        { name: 'Security & Surveillance', desc: 'Advanced physical security systems', path: '/services/security', icon: Lock },
+        { name: 'Cybersecurity & Antivirus', desc: 'World-class digital threat defense', path: '/services/cybersecurity', icon: Server },
+        { name: 'Digital Marketing & Graphics', desc: 'Creative design & strategic SEO', path: '/services/marketing-graphics', icon: Palette },
+        { name: 'Software & Web Development', desc: 'Custom applications & systems', path: '/services/digital-services', icon: Monitor },
+        { name: 'Web Hosting & Domains', desc: 'Secure enterprise-grade hosting', path: '/services/web-hosting', icon: Globe },
       ]
     },
     { name: 'Projects', path: '/projects' },
@@ -57,17 +57,28 @@ const Navbar = () => {
                 </Link>
                 
                 {link.dropdown && (
-                  <div className="dropdown-menu glass-card">
-                    {link.dropdown.map((subItem) => (
-                      <Link
-                        key={subItem.name}
-                        to={subItem.path}
-                        className="dropdown-item"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        {subItem.name}
-                      </Link>
-                    ))}
+                  <div className="dropdown-menu mega-menu glass-card">
+                    {link.dropdown.map((subItem) => {
+                      const Icon = subItem.icon;
+                      return (
+                        <Link
+                          key={subItem.name}
+                          to={subItem.path}
+                          className="dropdown-item mega-item"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          {Icon && (
+                            <div className="mega-icon">
+                              <Icon size={20} />
+                            </div>
+                          )}
+                          <div className="mega-text">
+                            <span className="mega-title">{subItem.name}</span>
+                            {subItem.desc && <span className="mega-desc">{subItem.desc}</span>}
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>

@@ -21,11 +21,13 @@ const About = () => {
   const [story, setStory] = useState(null);
   const [founder, setFounder] = useState(null);
   const [vm, setVm] = useState(null);
+  const [overview, setOverview] = useState(null);
 
   useEffect(() => {
     getContent('about', 'story').then(res => setStory(res.data)).catch(() => {});
     getContent('about', 'founder').then(res => setFounder(res.data)).catch(() => {});
     getContent('about', 'vision_mission').then(res => setVm(res.data)).catch(() => {});
+    getContent('home', 'overview').then(res => setOverview(res.data)).catch(() => {});
   }, []);
 
   return (
@@ -40,62 +42,108 @@ const About = () => {
         </header>
 
 
-        <section className="about-content">
-          <div className="about-text animate-fade-in">
-            <span className="badge">{settings?.experience_years || '15+'} Years in Business</span>
-            <p>
-              {(story?.paragraph1 || `Hexagon Computer Systems is a ${settings?.experience_years || '15+'} years old technology company established in ${settings?.founded_year || '2009'}.
-              With a team of well-equipped professionals, we endeavor to provide high level technology
-              support to our clients.`)
-                .replace(/\b(19|20)\d{2}\b/g, settings?.founded_year || '2009')
-                .replace(/\b\d+\+?\s+years?\b/gi, `${settings?.experience_years || '15+'} years`)
-                .replace(/Hexagon Computer Systems/gi, settings?.company_name || 'Hexagon Computer Systems')}
-            </p>
-            <p>
-              {story?.paragraph2 || `Our team of professionals, sharing knowledge and working together, chose the symbol of
-              the ‘Hexagon’. A hexagon is a mathematical shape: a six-sided polygon; the same shape
-              that honey bees use to build strong hives and use efficiently to produce honey and
-              sustain the life of the colony.`}
-            </p>
-            {!story && (
-              <>
-                <p>
-                  {settings?.company_name || 'Hexagon Computer Systems'} has been formed by a group of professionals having vivid
-                  experience and wide exposure in Information Technology and Business. People involved
-                  here are young qualified business graduates and qualified engineers from the renowned
-                  universities across the country.
-                </p>
-                <p>
-                  Since its establishment, the organization works on different Information Communication
-                  Technology projects. All of our projects which were undertaken were a success. We provide
-                  turnkey automated solutions for your trade and industry.
-                </p>
-              </>
-            )}
-            <p>
-              Depending on the size and field of your organization, we have different products and
-              services to meet your requirements. We provide the optimum and customized solutions made
-              for your organization. Hexagon accomplished a number of projects on the stream of
-              webpage development, database and system development, and network installation.
-              The organization has a number of recognition certificates for its best performance.
-            </p>
-            <div className="about-stats">
-              <div className="mini-stat">
-                <h3>{settings?.founded_year || "2009"}</h3>
-                <p>Founded</p>
+        <section className="about-intro-section">
+          <div className="about-intro-grid">
+            {/* LEFT: About Text */}
+            <div className="about-text animate-fade-in">
+              <span className="badge">{settings?.experience_years || '15+'} Years in Business</span>
+              <h2>{story?.title || 'About Hexagon'}</h2>
+              <p>
+                {(story?.paragraph1 || `Hexagon Computer Systems is a ${settings?.experience_years || '15+'} years old technology company established in ${settings?.founded_year || '2009'}.
+                With a team of well-equipped professionals, we endeavor to provide high level technology
+                support to our clients.`)
+                  .replace(/\b(19|20)\d{2}\b/g, settings?.founded_year || '2009')
+                  .replace(/\b\d+\+?\s+years?\b/gi, `${settings?.experience_years || '15+'} years`)
+                  .replace(/Hexagon Computer Systems/gi, settings?.company_name || 'Hexagon Computer Systems')}
+              </p>
+              <p>
+                {story?.paragraph2 || `Our team of professionals, sharing knowledge and working together, chose the symbol of
+                the 'Hexagon'. A hexagon is a mathematical shape: a six-sided polygon; the same shape
+                that honey bees use to build strong hives and use efficiently to produce honey and
+                sustain the life of the colony.`}
+              </p>
+              <p>
+                Depending on the size and field of your organization, we have different products and
+                services to meet your requirements. We provide the optimum and customized solutions made
+                for your organization.
+              </p>
+              <div className="about-stats">
+                <div className="mini-stat">
+                  <h3>{settings?.founded_year || "2009"}</h3>
+                  <p>Founded</p>
+                </div>
+                <div className="mini-stat">
+                  <h3>{settings?.experience_years || "15+"}</h3>
+                  <p>Years Experience</p>
+                </div>
+                <div className="mini-stat">
+                  <h3>{settings?.employees || "50+"}</h3>
+                  <p>Employees</p>
+                </div>
               </div>
-              <div className="mini-stat">
-                <h3>{settings?.experience_years || "15+"}</h3>
-                <p>Years Experience</p>
-              </div>
-              <div className="mini-stat">
-                <h3>{settings?.employees || "50+"}</h3>
-                <p>Employees</p>
+            </div>
+
+            {/* RIGHT: Company Overview Cards */}
+            <div className="about-overview-cards animate-fade-in">
+              <span className="badge">Company Overview</span>
+              <h2>Our Track Record</h2>
+              <div className="overview-cards-side">
+                <div className="overview-side-item glass-card">
+                  <div className="overview-number">01</div>
+                  <Globe className="text-primary" size={28} />
+                  <div>
+                    <h4>{overview?.card1_title || "Founded"}</h4>
+                    <p>{(overview?.card1_text || `Established in ${settings?.founded_year || '2009'}.`).replace(/\b(19|20)\d{2}\b/g, settings?.founded_year || '2009')}</p>
+                  </div>
+                </div>
+                <div className="overview-side-item glass-card">
+                  <div className="overview-number">02</div>
+                  <MapPin className="text-secondary" size={28} />
+                  <div>
+                    <h4>{overview?.card2_title || "Our Office"}</h4>
+                    <p>{overview?.card2_text || settings?.address || "22 Mazoriya, MAF Bldg."}</p>
+                  </div>
+                </div>
+                <div className="overview-side-item glass-card">
+                  <div className="overview-number">03</div>
+                  <Briefcase className="text-accent" size={28} />
+                  <div>
+                    <h4>{overview?.card3_title || "Experience"}</h4>
+                    <p>{(overview?.card3_text || "15+ Years of industry leadership.").replace(/\b\d+\+?\s*[Yy]ears?\b/g, `${settings?.experience_years || '15+'} Years`)}</p>
+                  </div>
+                </div>
+                <div className="overview-side-item glass-card">
+                  <div className="overview-number">04</div>
+                  <Code className="text-primary" size={28} />
+                  <div>
+                    <h4>{overview?.card4_title || "Software Projects"}</h4>
+                    <p>{(overview?.card4_text || "250+ Successfully delivered.").replace(/\b\d+\+?\b/g, `${settings?.software_projects || '250+'}`)}</p>
+                  </div>
+                </div>
+                <div className="overview-side-item glass-card">
+                  <div className="overview-number">05</div>
+                  <Shield className="text-secondary" size={28} />
+                  <div>
+                    <h4>{overview?.card5_title || "Network & Security"}</h4>
+                    <p>{(overview?.card5_text || "180+ Enterprise deployments.").replace(/\b\d+\+?\b/g, `${settings?.network_projects || '180+'}`)}</p>
+                  </div>
+                </div>
+                <div className="overview-side-item glass-card">
+                  <div className="overview-number">06</div>
+                  <Users className="text-accent" size={28} />
+                  <div>
+                    <h4>{overview?.card6_title || "Employees"}</h4>
+                    <p>{(overview?.card6_text || "50+ Dedicated professionals.").replace(/\b\d+\+?\b/g, `${settings?.employees || '50+'}`)}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        </section>
 
-            <div className="vision-grid mt-5">
+        {/* Vision / Mission / Values */}
+        <section className="about-content">
+          <div className="vision-grid mt-5">
               <div className="glass-card vision-card">
                 <Target size={40} className="text-secondary" />
                 <h3>Our Mission</h3>
@@ -149,27 +197,19 @@ const About = () => {
                 <h3>Core Values</h3>
                 <ul className="core-values-list">
                   <li>
-                    <div className="hexagon-icon-small">
-                      <Zap size={14} />
-                    </div>
+                    <div className="hexagon-icon-small"><Zap size={14} /></div>
                     <span>Prompt and efficient delivery of products and services</span>
                   </li>
                   <li>
-                    <div className="hexagon-icon-small">
-                      <Users size={14} />
-                    </div>
+                    <div className="hexagon-icon-small"><Users size={14} /></div>
                     <span>Solid and dependable teamwork</span>
                   </li>
                   <li>
-                    <div className="hexagon-icon-small">
-                      <Scale size={14} />
-                    </div>
+                    <div className="hexagon-icon-small"><Scale size={14} /></div>
                     <span>Professional, personal and fiscal discipline based on the highest standard of ethical business practice</span>
                   </li>
                   <li>
-                    <div className="hexagon-icon-small">
-                      <Lock size={14} />
-                    </div>
+                    <div className="hexagon-icon-small"><Lock size={14} /></div>
                     <span>Confidentiality: Your data and other confidential information are safe with us – We guarantee it!</span>
                   </li>
                 </ul>
@@ -181,7 +221,6 @@ const About = () => {
           <div className="about-text animate-fade-in">
             <span className="badge">Our Leadership</span>
             <h2>{founder?.title || "Founder's Statement"}</h2>
-            <div className="section-divider"></div>
             <p>
               {(founder?.text1 || `Ephrem Abreha is the visionary behind Hexagon Computer Systems.
               With over ${settings?.experience_years || '15+'} years of industry leadership, Ephrem founded Hexagon with a goal to
@@ -207,11 +246,10 @@ const About = () => {
 
 
 
-        <section className="who-we-are-section grid-2 section-padding">
+        <section className="who-we-are-section grid-2">
           <div className="about-text animate-fade-in">
             <span className="badge">Our Identity</span>
             <h2>Who We Are</h2>
-            <div className="section-divider"></div>
             <p className="lead-text">
               We are a group of young and dynamic people who love to combine our talents and skills in order to help companies to get more business.
             </p>
