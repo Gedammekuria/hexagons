@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { getDb } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
-import { sendInquiryNotification, sendClientConfirmation } from '../utils/mailer.js';
+import { authMiddleware, requireAdmin } from '../middleware/auth.js';
+import { logAdminAction } from '../utils/logger.js';
+import { sendInquiryNotification, sendClientConfirmation, sendInquiryStatusUpdate } from '../utils/mailer.js';
 
 const router = Router();
 
@@ -131,6 +132,10 @@ router.get('/stats', authMiddleware, async (req, res) => {
       GROUP BY day ORDER BY day ASC
     `)).rows;
 
+    const blogRes     = await db.query("SELECT COUNT(*) FROM blog_posts");
+    const projectRes  = await db.query("SELECT COUNT(*) FROM projects");
+    const teamRes     = await db.query("SELECT COUNT(*) FROM team_members WHERE active = 1");
+
     res.json({ 
       total: parseInt(totalRes.rows[0].count), 
       new: parseInt(newRes.rows[0].count),
@@ -139,6 +144,9 @@ router.get('/stats', authMiddleware, async (req, res) => {
       finished: parseInt(finishedRes.rows[0].count), 
       working: parseInt(workingRes.rows[0].count), 
       deleted: parseInt(deletedRes.rows[0].count),
+      blogs: parseInt(blogRes.rows[0].count),
+      projects: parseInt(projectRes.rows[0].count),
+      team: parseInt(teamRes.rows[0].count),
       byService, last7 
     });
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -158,7 +166,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // PATCH /api/inquiries/:id/status
-router.patch('/:id/status', authMiddleware, async (req, res) => {
+router.patch('/:id/status', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const { status } = req.body;
     const allowed = ['new', 'accepted', 'in progress', 'finished', 'working', 'archived', 'deleted'];
@@ -178,16 +186,49 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
     
     const result = await db.query(query, params);
     if (result.rowCount === 0) return res.status(404).json({ message: 'Inquiry not found.' });
-    res.json({ message: 'Status updated.', status });
+
+    // Track who updated — non-blocking, in case column migration hasn't run yet
+    db.query('UPDATE inquiries SET updated_by = $1 WHERE id = $2', [req.user.email, req.params.id]).catch(() => {});
+
+    // Fetch the inquiry details to send the notification
+    const inquiryRes = await db.query('SELECT * FROM inquiries WHERE id = $1', [req.params.id]);
+    const inquiry = inquiryRes.rows[0];
+
+    if (inquiry) {
+      sendInquiryStatusUpdate(inquiry, status).catch(err => console.error('[Email Error]', err.message));
+      
+      const meta = { ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress, ua: req.headers['user-agent'] };
+      logAdminAction(req.user.id, req.user.email, `Updated status for inquiry #${req.params.id} to: ${status}`, meta).catch(() => {});
+    }
+
+    // Fetch the updated inquiry to get the new finished_at value
+    const updatedInquiry = (await db.query('SELECT finished_at FROM inquiries WHERE id = $1', [req.params.id])).rows[0];
+
+    res.json({ 
+      message: 'Status updated.', 
+      status,
+      finished_at: updatedInquiry?.finished_at 
+    });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
 // DELETE /api/inquiries/:id
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const db = getDb();
     const result = await db.query("UPDATE inquiries SET status = 'deleted' WHERE id = $1", [req.params.id]);
     if (result.rowCount === 0) return res.status(404).json({ message: 'Inquiry not found.' });
+
+    // Fetch details to notify
+    const inquiryRes = await db.query('SELECT * FROM inquiries WHERE id = $1', [req.params.id]);
+    const inquiry = inquiryRes.rows[0];
+    if (inquiry) {
+      sendInquiryStatusUpdate(inquiry, 'deleted').catch(err => console.error('[Email Error]', err.message));
+      
+      const meta = { ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress, ua: req.headers['user-agent'] };
+      logAdminAction(req.user.id, req.user.email, `Moved inquiry #${req.params.id} to trash`, meta).catch(() => {});
+    }
+
     res.json({ message: 'Inquiry moved to trash.' });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });

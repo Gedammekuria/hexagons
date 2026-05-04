@@ -42,7 +42,6 @@ const BlogDetail = () => {
       <SEO 
         title={post.title} 
         description={post.excerpt} 
-        image={post.image}
       />
       
       <div className="container">

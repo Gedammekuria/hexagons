@@ -298,7 +298,6 @@ const Home = () => {
         </div>
       </section>
 
-
       <Procedures />
       <Team />
       <Partners />

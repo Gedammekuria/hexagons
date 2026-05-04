@@ -1,4 +1,4 @@
-const API_BASE = (import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000' : '')) + '/api';
+const API_BASE = (import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:5000' : '')) + '/api';
 
 export const getImageUrl = (path) => {
   if (!path) return '';
@@ -34,6 +34,8 @@ export const changePassword = (token, currentPassword, newPassword) => request('
 export const forgotPassword = (email) => request('POST', '/auth/forgot-password', { email });
 export const verifyPin     = (email, pin) => request('POST', '/auth/verify-pin', { email, pin });
 export const resetPassword  = (email, pin, newPassword) => request('POST', '/auth/reset-password', { email, pin, newPassword });
+export const getAdminLogs   = (token) => request('GET', '/auth/logs', null, token);
+export const terminateUser  = (token, email) => request('POST', '/auth/terminate', { email }, token);
 
 // ── Admin — Inquiries ──────────────────────────────────────────────────────
 export const getInquiries   = (token, params = {}) => request('GET', `/inquiries?${new URLSearchParams(params)}`, null, token);
@@ -84,10 +86,16 @@ export const updateBrand    = (token, id, data) => request('PUT', `/brands/${id}
 export const deleteBrand    = (token, id) => request('DELETE', `/brands/${id}`, null, token);
 
 // ── Clients ─────────────────────────────────────────────────────────────
-export const getClients     = () => request('GET', '/clients');
-export const createClient   = (token, data) => request('POST', '/clients', data, token);
-export const updateClient   = (token, id, data) => request('PUT', `/clients/${id}`, data, token);
-export const deleteClient   = (token, id) => request('DELETE', `/clients/${id}`, null, token);
+export const getClients = () => request('GET', '/clients');
+export const createClient = (token, data) => request('POST', '/clients', data, token);
+export const updateClient = (token, id, data) => request('PUT', `/clients/${id}`, data, token);
+export const deleteClient = (token, id) => request('DELETE', `/clients/${id}`, null, token);
+
+// Certificates
+export const getCertificates = (token) => request('GET', '/certificates', null, token);
+export const createCertificate = (token, data) => request('POST', '/certificates', data, token);
+export const updateCertificate = (token, id, data) => request('PUT', `/certificates/${id}`, data, token);
+export const deleteCertificate = (token, id) => request('DELETE', `/certificates/${id}`, null, token);
 
 export const uploadImage = async (token, file) => {
   const formData = new FormData();

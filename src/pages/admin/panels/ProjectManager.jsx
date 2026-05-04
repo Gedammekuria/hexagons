@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { getProjects, createProject, updateProject, deleteProject, uploadImage, getProjectCategories } from '../../../api/client';
-import { Plus, Edit2, Trash2, Folder, Star, Upload, Search, RefreshCw, X, Save, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Folder, Star, Upload, Search, RefreshCw, X, Save, Loader2, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { useToast } from '../../../components/Toast';
+import Modal from '../../../components/Modal';
 
 const EMPTY = { title: '', category: 'Software & Web Development', description: '', image: '', tags: '', link: '', show_link: true, featured: false };
 const inp = { width: '100%', boxSizing: 'border-box', padding: '0.7rem 0.9rem', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.5rem', fontSize: '0.9rem', outline: 'none' };
+const formatId = (id) => `PRJ_${String(id).padStart(3, '0')}`;
 
-const ProjectManager = ({ token }) => {
+const ProjectManager = ({ token, admin }) => {
+  const isViewer = admin?.role === 'viewer';
   const [projects, setProjects] = useState([]);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
@@ -106,87 +109,84 @@ const ProjectManager = ({ token }) => {
 
   useEffect(() => { setPage(1); }, [search, filter, featuredFilter, date]);
 
-  if (editing !== null) return (
-    <div style={{ padding: '2rem', maxWidth: 700 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-        <h2 style={{ color: '#111827', margin: 0 }}>{editing === 'new' ? 'New Project' : 'Edit Project'}</h2>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button onClick={cancel} style={{ background: '#ffffff', border: 'none', borderRadius: '0.5rem', color: '#6b7280', padding: '0.5rem 0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><X size={15}/> Cancel</button>
-          <button onClick={saveProject} disabled={saving} style={{ background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#fff', padding: '0.5rem 1rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            {saving ? <Loader2 size={14}/> : <Save size={14}/>} {saving ? 'Saving...' : 'Save Project'}
-          </button>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>Project Title</label>
-          <input value={form.title} onChange={e => set('title', e.target.value)} style={inp} placeholder="e.g. ERP System v2" />
-        </div>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>Category</label>
-          <select value={form.category} onChange={e => set('category', e.target.value)} style={inp}>
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>Tags (comma separated)</label>
-          <input value={form.tags} onChange={e => set('tags', e.target.value)} style={inp} placeholder="React, Node.js, SQLite" />
-        </div>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>External Link</label>
-          <input value={form.link} onChange={e => set('link', e.target.value)} style={inp} placeholder="https://..." />
-        </div>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>Project Image</label>
-            {form.image && (
-              <div style={{ width: '100%', height: '140px', background: '#f3f4f6', borderRadius: '0.5rem', overflow: 'hidden', border: '1px solid #e5e7eb', marginBottom: '0.5rem' }}>
-                <img 
-                  src={form.image.startsWith('http') ? form.image : (form.image.startsWith('/images') ? form.image : `${form.image}`)} 
-                  alt="Preview" 
-                  style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
-                />
-              </div>
-            )}
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <input type="text" value={form.image} onChange={e => set('image', e.target.value)} style={{ ...inp, flex: 1 }} placeholder="Image URL..." />
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1rem', background: '#ffffff', border: '1px dashed #00b37a', borderRadius: '0.5rem', cursor: 'pointer', color: '#00b37a', whiteSpace: 'nowrap' }}>
-              <Upload size={18} />
-              <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Upload Image</span>
-              <input type="file" onChange={handleImageUpload} style={{ display: 'none' }} accept="image/*" />
-            </label>
-            <span style={{ fontSize: '0.75rem', color: '#9ca3af', whiteSpace: 'nowrap' }}>Recommended: 800x600px, Max 2MB</span>
-          </div>
-        </div>
-        <div>
-          <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>Description</label>
-          <textarea rows={4} value={form.description} onChange={e => set('description', e.target.value)} style={{ ...inp, fontFamily: 'inherit', resize: 'vertical' }} />
-        </div>
-        <div style={{ display: 'flex', gap: '1.5rem' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#374151' }}>
-            <input type="checkbox" checked={form.show_link} onChange={e => set('show_link', e.target.checked)} /> Show external link
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#374151' }}>
-            <input type="checkbox" checked={form.featured} onChange={e => set('featured', e.target.checked)} /> Featured project
-          </label>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="admin-content" style={{ padding: '2rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {editing !== null && (
+        <Modal 
+          onClose={cancel} 
+          title={editing === 'new' ? 'Add New Project' : 'Edit Project'}
+          maxWidth="700px"
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>Project Title</label>
+              <input value={form.title} onChange={e => set('title', e.target.value)} style={inp} placeholder="e.g. ERP System v2" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>Category</label>
+                <select value={form.category} onChange={e => set('category', e.target.value)} style={inp}>
+                  {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>External Link</label>
+                <input value={form.link} onChange={e => set('link', e.target.value)} style={inp} placeholder="https://..." />
+              </div>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>Tags (comma separated)</label>
+              <input value={form.tags} onChange={e => set('tags', e.target.value)} style={inp} placeholder="React, Node.js, SQLite" />
+            </div>
+            
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>
+                Project Image <span style={{ color: '#94a3b8', fontWeight: 400 }}>(Recommended: 800 × 600px)</span>
+              </label>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                {form.image && <img src={form.image} alt="Preview" style={{ width: 120, height: 80, borderRadius: '0.5rem', objectFit: 'cover', border: '1px solid #e5e7eb' }} />}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <input type="text" value={form.image} onChange={e => set('image', e.target.value)} style={inp} placeholder="Image URL..." />
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: '#f3f4f6', borderRadius: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, width: 'fit-content' }}>
+                    Upload Image
+                    <input type="file" onChange={handleImageUpload} style={{ display: 'none' }} accept="image/*" />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.3rem' }}>Description</label>
+              <textarea rows={4} value={form.description} onChange={e => set('description', e.target.value)} style={{ ...inp, fontFamily: 'inherit', resize: 'vertical' }} />
+            </div>
+
+            <div style={{ display: 'flex', gap: '1.5rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#374151' }}>
+                <input type="checkbox" checked={form.show_link} onChange={e => set('show_link', e.target.checked)} /> Show external link
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#374151' }}>
+                <input type="checkbox" checked={form.featured} onChange={e => set('featured', e.target.checked)} /> Featured project
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+              <button onClick={cancel} style={{ padding: '0.6rem 1.2rem', borderRadius: '0.5rem', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+              {!isViewer && <button onClick={saveProject} disabled={saving} style={{ padding: '0.6rem 1.5rem', borderRadius: '0.5rem', border: 'none', background: 'linear-gradient(135deg,#00b37a,#009966)', color: '#fff', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Project
+              </button>}
+            </div>
+          </div>
+        </Modal>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
         <h2 style={{ color: '#111827', margin: 0 }}>Projects <span style={{ color: '#6b7280', fontSize: '1rem' }}>({projects.length})</span></h2>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#ffffff', border: 'none', borderRadius: '0.5rem', color: '#6b7280', padding: '0.5rem 0.9rem', cursor: 'pointer', fontSize: '0.85rem' }}>
             <RefreshCw size={14}/> Refresh
           </button>
-          <button onClick={openNew} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+          {!isViewer && <button onClick={openNew} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
             <Plus size={16}/> Add Project
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -225,11 +225,11 @@ const ProjectManager = ({ token }) => {
         <div className="table-container">
           <table className="admin-table">
             <thead><tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-              {['ID', 'Image', 'Title', 'Category', 'Featured', 'Created', 'Link', 'Tags', 'Action'].map(h => <th key={h} style={{ padding: '0.7rem 0.9rem', color: '#6b7280', fontSize: '0.72rem', fontWeight: 600, textAlign: 'left', textTransform: 'uppercase' }}>{h}</th>)}
+              {['ID', 'Image', 'Title', 'Category', 'Featured', 'Updated By', 'Link', 'Tags', 'Action'].map(h => <th key={h} style={{ padding: '0.7rem 0.9rem', color: '#6b7280', fontSize: '0.72rem', fontWeight: 600, textAlign: 'left', textTransform: 'uppercase' }}>{h}</th>)}
             </tr></thead>
             <tbody>{paginatedProjects.map(p => (
               <tr key={p.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                <td style={{ padding: '0.75rem 0.9rem', color: '#6b7280', fontSize: '0.8rem' }}>PRO_{p.id}</td>
+                <td style={{ padding: '0.75rem 0.9rem', color: '#6b7280', fontSize: '0.8rem' }}>{formatId(p.id)}</td>
                 <td style={{ padding: '0.75rem 0.9rem' }}>
                   {p.image ? (
                     <img src={p.image.startsWith('http') ? p.image : (p.image.startsWith('/images') ? p.image : `${p.image}`)} alt={p.title} style={{ width: 40, height: 40, borderRadius: '4px', objectFit: 'cover' }} />
@@ -242,7 +242,10 @@ const ProjectManager = ({ token }) => {
                 <td style={{ padding: '0.75rem 0.9rem' }}>
                   {p.featured ? <Star size={16} fill="#facc15" color="#facc15" /> : <span style={{ color: '#d1d5db' }}>—</span>}
                 </td>
-                <td style={{ padding: '0.75rem 0.9rem', color: '#6b7280', fontSize: '0.78rem' }}>{new Date(p.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
+                <td style={{ padding: '0.75rem 0.9rem' }}>
+                  <div style={{ fontSize: '0.78rem', color: '#111827', fontWeight: 500 }}>{p.updated_by || 'System'}</div>
+                  <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>{new Date(p.updated_at || p.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</div>
+                </td>
                 <td style={{ padding: '0.75rem 0.9rem', color: '#3b82f6', fontSize: '0.8rem', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {p.link ? <a href={p.link} target="_blank" rel="noopener noreferrer">{p.link.replace(/^https?:\/\//, '')}</a> : '—'}
                 </td>
@@ -256,8 +259,8 @@ const ProjectManager = ({ token }) => {
                 </td>
                 <td style={{ padding: '0.75rem 0.9rem' }}>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
-                    <button onClick={() => openEdit(p)} style={{ background: '#f3f4f6', border: 'none', borderRadius: '0.4rem', color: '#374151', padding: '0.35rem 0.6rem', cursor: 'pointer' }}><Edit2 size={13}/></button>
-                    <button onClick={() => setDelConfirm(p.id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: '0.4rem', color: '#f87171', padding: '0.35rem 0.6rem', cursor: 'pointer' }}><Trash2 size={13}/></button>
+                    <button onClick={() => openEdit(p)} style={{ background: '#f3f4f6', border: 'none', borderRadius: '0.4rem', color: '#374151', padding: '0.35rem 0.6rem', cursor: 'pointer' }}>{isViewer ? <Eye size={13}/> : <Edit2 size={13}/>}</button>
+                    {!isViewer && <button onClick={() => setDelConfirm(p.id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: '0.4rem', color: '#f87171', padding: '0.35rem 0.6rem', cursor: 'pointer' }}><Trash2 size={13}/></button>}
                   </div>
                 </td>
               </tr>

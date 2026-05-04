@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, requireAdmin } from '../middleware/auth.js';
 import 'dotenv/config';
 
 // Configure Cloudinary
@@ -32,7 +32,7 @@ const upload = multer({
 
 const router = Router();
 
-router.post('/', authMiddleware, (req, res) => {
+router.post('/', authMiddleware, requireAdmin, (req, res) => {
   upload.single('image')(req, res, (err) => {
     if (err) {
       console.error('❌ Cloudinary Upload Error:', err);

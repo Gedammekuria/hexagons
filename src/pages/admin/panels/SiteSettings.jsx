@@ -10,7 +10,8 @@ const field = (label, key, val, onChange, type = 'text') => (
   </div>
 );
 
-const SiteSettings = ({ token }) => {
+const SiteSettings = ({ token, admin }) => {
+  const isViewer = admin?.role === 'viewer';
   const [data, setData]       = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving]   = useState(false);
@@ -64,9 +65,9 @@ const SiteSettings = ({ token }) => {
         <h2 style={{ color: '#111827', margin: 0 }}>Site Settings</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {msg && <span style={{ color: msg.startsWith('Error') ? '#f87171' : '#4ade80', fontSize: '0.85rem' }}>{msg}</span>}
-          <button onClick={save} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#111827', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
+          {!isViewer && <button onClick={save} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#111827', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
             {saving ? <Loader2 size={15} /> : <Save size={15} />} {saving ? 'Saving…' : 'Save All'}
-          </button>
+          </button>}
         </div>
       </div>
 

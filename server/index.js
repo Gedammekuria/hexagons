@@ -16,6 +16,7 @@ import aiRoutes from './src/routes/ai.js';
 import brandsRoutes from './src/routes/brands.js';
 import clientsRoutes from './src/routes/clients.js';
 import servicesRoutes from './src/routes/services.js';
+import certificatesRoutes from './src/routes/certificates.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -54,19 +55,19 @@ app.use(cors({
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, 
+  max: 2000, 
   message: { message: 'Too many requests, please try again later.' }
 });
 
 const strictLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 50, // Balanced limit for security and usability
+  max: 1000, 
   message: { message: 'Too many attempts from this IP. Please try again in an hour.' }
 });
 
-app.use('/api/', generalLimiter);
-app.use('/api/auth', strictLimiter);
-app.use('/api/inquiries', strictLimiter);
+// app.use('/api/', generalLimiter);
+// app.use('/api/auth', strictLimiter);
+// app.use('/api/inquiries', strictLimiter);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -85,6 +86,7 @@ app.use('/api/ai',        aiRoutes);
 app.use('/api/brands',    brandsRoutes);
 app.use('/api/clients',   clientsRoutes);
 app.use('/api/services',  servicesRoutes);
+app.use('/api/certificates', certificatesRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Serve frontend static files in production

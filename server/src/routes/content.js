@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getDb } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, requireAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -30,19 +30,20 @@ router.get('/all', async (req, res) => {
 });
 
 // POST /api/content
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const { page, section, data } = req.body;
     if (!page || !section || !data) return res.status(400).json({ message: 'Page, section and data are required.' });
     
     const db = getDb();
     await db.query(`
-      INSERT INTO content (page, section, data, updated_at)
-      VALUES ($1, $2, $3, NOW())
+      INSERT INTO content (page, section, data, updated_by, updated_at)
+      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
       ON CONFLICT(page, section) DO UPDATE SET
         data = EXCLUDED.data,
+        updated_by = EXCLUDED.updated_by,
         updated_at = EXCLUDED.updated_at
-    `, [page, section, JSON.stringify(data)]);
+    `, [page, section, JSON.stringify(data), req.user.email]);
     
     res.json({ message: 'Content updated.' });
   } catch (e) { res.status(500).json({ message: e.message }); }

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getDb } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, requireAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 });
 
 // PUT /api/settings
-router.put('/', authMiddleware, async (req, res) => {
+router.put('/', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const db = getDb();
     for (const [k, v] of Object.entries(req.body)) {

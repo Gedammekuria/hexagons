@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { getBlogPosts, createPost, updatePost, deletePost, uploadImage } from '../../../api/client';
-import { Plus, Edit2, Trash2, Save, X, Loader2, Eye, EyeOff, FileText, Search, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, Loader2, Eye, EyeOff, FileText, Search, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '../../../components/Toast';
+import Modal from '../../../components/Modal';
 
 const EMPTY = { title: '', slug: '', excerpt: '', body: '', image: '', category: 'General', tags: '', status: 'draft', author: 'Hexagon Team' };
 const inp = { width: '100%', boxSizing: 'border-box', padding: '0.7rem 0.9rem', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.5rem', color: '#111827', fontSize: '0.9rem', outline: 'none' };
 const ta  = { ...inp, resize: 'vertical', fontFamily: 'inherit' };
+const formatId = (id) => `BLG_${String(id).padStart(3, '0')}`;
 
 const statusBadgeStyle = s => ({
   published: { bg: 'rgba(34,197,94,0.15)',  color: '#4ade80' },
   draft:     { bg: 'rgba(234,179,8,0.15)',  color: '#facc15' },
 }[s] || { bg: 'rgba(100,116,139,0.15)', color: '#94a3b8' });
 
-const BlogManager = ({ token }) => {
+const BlogManager = ({ token, admin }) => {
+  const isViewer = admin?.role === 'viewer';
   const [posts, setPosts]   = useState([]);
   const [total, setTotal]   = useState(0);
   const [editing, setEditing] = useState(null);
@@ -100,79 +103,55 @@ const BlogManager = ({ token }) => {
 
   useEffect(() => { setPage(1); }, [search, filter, date]);
 
-  if (editing !== null) return (
-    <div style={{ padding: '2rem', overflowY: 'auto', maxWidth: 760 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-        <h2 style={{ color: '#111827', margin: 0 }}>{editing === 'new' ? 'New Post' : 'Edit Post'}</h2>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {msg && <span style={{ color: msg.startsWith('E') ? '#f87171' : '#4ade80', fontSize: '0.85rem' }}>{msg}</span>}
-          <button onClick={cancel} style={{ background: '#ffffff', border: 'none', borderRadius: '0.5rem', color: '#6b7280', padding: '0.5rem 0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><X size={15} /> Cancel</button>
-          <button onClick={savePost} disabled={saving} style={{ background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#fff', padding: '0.5rem 1rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            {saving ? <Loader2 size={14} /> : <Save size={14} />} {saving ? 'Saving…' : 'Save Post'}
-          </button>
-        </div>
-      </div>
-
-      {[['Title', 'title', 'text'], ['Slug (URL)', 'slug', 'text'], ['Author', 'author', 'text'], ['Category', 'category', 'text'], ['Tags (comma separated)', 'tags', 'text']].map(([label, key, type]) => (
-        <div key={key} style={{ marginBottom: '0.9rem' }}>
-          <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>{label}</label>
-          <input type={type} value={form[key] || ''} onChange={e => { set(key, e.target.value); if (key === 'title' && editing === 'new') autoSlug(e.target.value); }} style={inp} />
-        </div>
-      ))}
-
-      <div style={{ marginBottom: '0.9rem' }}>
-        <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>Cover Photo</label>
-        {form.image && (
-          <div style={{ marginBottom: '0.5rem' }}>
-            <img src={form.image} alt="Preview" style={{ maxHeight: 100, borderRadius: '0.4rem', border: '1px solid #e5e7eb' }} />
-          </div>
-        )}
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <input type="text" value={form.image || ''} onChange={e => set('image', e.target.value)} style={{ ...inp, flex: 1 }} placeholder="Image URL..." />
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1rem', background: '#ffffff', border: '1px dashed #00b37a', borderRadius: '0.5rem', cursor: 'pointer', color: '#00b37a', whiteSpace: 'nowrap' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Upload</span>
-            <input type="file" accept="image/*" onChange={async (e) => {
-              const file = e.target.files[0];
-              if (!file) return;
-              setMsg('Uploading...');
-              try {
-                const res = await uploadImage(token, file);
-                set('image', res.url);
-                setMsg('Uploaded!');
-                setTimeout(() => setMsg(''), 2000);
-              } catch (err) { setMsg('Failed: ' + err.message); }
-            }} style={{ display: 'none' }} />
-          </label>
-          <span style={{ fontSize: '0.75rem', color: '#9ca3af', whiteSpace: 'nowrap' }}>Recommended: 800x600px, Max 2MB</span>
-        </div>
-      </div>
-
-      <div style={{ marginBottom: '0.9rem' }}>
-        <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>Status</label>
-        <select value={form.status} onChange={e => set('status', e.target.value)} style={inp}>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </select>
-      </div>
-
-      <div style={{ marginBottom: '0.9rem' }}>
-        <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>Body Content</label>
-        <textarea rows={14} value={form.body || ''} onChange={e => set('body', e.target.value)} style={ta} />
-      </div>
-    </div>
-  );
-
   return (
     <div className="admin-content" style={{ padding: '2rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {editing !== null && (
+        <Modal 
+          onClose={cancel} 
+          title={editing === 'new' ? 'Create New Post' : 'Edit Blog Post'}
+          maxWidth="800px"
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {[['Title', 'title', 'text'], ['Slug (URL)', 'slug', 'text'], ['Author', 'author', 'text'], ['Category', 'category', 'text'], ['Tags (comma separated)', 'tags', 'text']].map(([label, key, type]) => (
+              <div key={key}>
+                <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>{label}</label>
+                <input type={type} value={form[key] || ''} onChange={e => { set(key, e.target.value); if (key === 'title' && editing === 'new') autoSlug(e.target.value); }} style={inp} />
+              </div>
+            ))}
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>Status</label>
+                <select value={form.status} onChange={e => set('status', e.target.value)} style={inp}>
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#6b7280', fontSize: '0.78rem', marginBottom: '0.3rem' }}>Body Content</label>
+              <textarea rows={12} value={form.body || ''} onChange={e => set('body', e.target.value)} style={ta} />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+              <button onClick={cancel} style={{ padding: '0.6rem 1.2rem', borderRadius: '0.5rem', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+              {!isViewer && <button onClick={savePost} disabled={saving} style={{ padding: '0.6rem 1.5rem', borderRadius: '0.5rem', border: 'none', background: 'linear-gradient(135deg,#00b37a,#009966)', color: '#fff', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Changes
+              </button>}
+            </div>
+          </div>
+        </Modal>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
         <h2 style={{ color: '#111827', margin: 0 }}>Blog Posts <span style={{ color: '#6b7280', fontSize: '1rem' }}>({total})</span></h2>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#ffffff', border: 'none', borderRadius: '0.5rem', color: '#6b7280', padding: '0.5rem 0.9rem', cursor: 'pointer', fontSize: '0.85rem' }}>
             <RefreshCw size={14}/> Refresh
           </button>
-          <button onClick={openNew} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+          {!isViewer && <button onClick={openNew} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', background: 'linear-gradient(135deg,#00b37a,#009966)', border: 'none', borderRadius: '0.5rem', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
             <Plus size={16}/> New Post
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -202,26 +181,28 @@ const BlogManager = ({ token }) => {
         <div className="table-container">
           <table className="admin-table">
             <thead><tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-              {['Date', 'Cover', 'Title', 'Category', 'Status', 'Action'].map(h => <th key={h} style={{ padding: '0.7rem 0.9rem', color: '#6b7280', fontSize: '0.72rem', fontWeight: 600, textAlign: 'left', textTransform: 'uppercase' }}>{h}</th>)}
+              {['ID', 'Date', 'Title', 'Category', 'Status', 'Updated By', 'Action'].map(h => <th key={h} style={{ padding: '0.7rem 0.9rem', color: '#6b7280', fontSize: '0.72rem', fontWeight: 600, textAlign: 'left', textTransform: 'uppercase' }}>{h}</th>)}
             </tr></thead>
             <tbody>{paginatedPosts.map(p => {
               const s = statusBadgeStyle(p.status);
               return (
                 <tr key={p.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                  <td style={{ padding: '0.75rem 0.9rem', color: '#6b7280', fontSize: '0.8rem' }}>{formatId(p.id)}</td>
                   <td style={{ padding: '0.75rem 0.9rem', color: '#6b7280', fontSize: '0.78rem' }}>{new Date(p.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
-                  <td style={{ padding: '0.75rem 0.9rem' }}>
-                    {p.image ? <img src={p.image} alt="" style={{ width: 40, height: 30, borderRadius: '4px', objectFit: 'cover' }} /> : <div style={{ width: 40, height: 30, borderRadius: '4px', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={14} /></div>}
-                  </td>
                   <td style={{ padding: '0.75rem 0.9rem', color: '#111827', fontWeight: 600, fontSize: '0.88rem', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</td>
                   <td style={{ padding: '0.75rem 0.9rem', color: '#6b7280', fontSize: '0.83rem' }}>{p.category}</td>
                   <td style={{ padding: '0.75rem 0.9rem' }}>
                     <span style={{ padding: '0.2rem 0.6rem', borderRadius: '999px', fontSize: '0.72rem', fontWeight: 600, background: s.bg, color: s.color }}>{p.status}</span>
                   </td>
                   <td style={{ padding: '0.75rem 0.9rem' }}>
+                    <div style={{ fontSize: '0.78rem', color: '#111827', fontWeight: 500 }}>{p.updated_by || 'System'}</div>
+                    <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>{new Date(p.updated_at || p.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</div>
+                  </td>
+                  <td style={{ padding: '0.75rem 0.9rem' }}>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
-                      <button onClick={() => toggleStatus(p)} title={p.status === 'draft' ? 'Publish' : 'Unpublish'} style={{ background: '#f3f4f6', border: 'none', borderRadius: '0.4rem', color: p.status === 'draft' ? '#4ade80' : '#facc15', padding: '0.35rem 0.6rem', cursor: 'pointer' }}>{p.status === 'draft' ? <Eye size={13}/> : <EyeOff size={13}/>}</button>
-                      <button onClick={() => openEdit(p)} style={{ background: '#f3f4f6', border: 'none', borderRadius: '0.4rem', color: '#374151', padding: '0.35rem 0.6rem', cursor: 'pointer' }}><Edit2 size={13}/></button>
-                      <button onClick={() => setDeleteConfirm(p.id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: '0.4rem', color: '#f87171', padding: '0.35rem 0.6rem', cursor: 'pointer' }}><Trash2 size={13}/></button>
+                      {!isViewer && <button onClick={() => toggleStatus(p)} title={p.status === 'draft' ? 'Publish' : 'Unpublish'} style={{ background: '#f3f4f6', border: 'none', borderRadius: '0.4rem', color: p.status === 'draft' ? '#4ade80' : '#facc15', padding: '0.35rem 0.6rem', cursor: 'pointer' }}>{p.status === 'draft' ? <Eye size={13}/> : <EyeOff size={13}/>}</button>}
+                      <button onClick={() => openEdit(p)} style={{ background: '#f3f4f6', border: 'none', borderRadius: '0.4rem', color: '#374151', padding: '0.35rem 0.6rem', cursor: 'pointer' }}>{isViewer ? <Eye size={13}/> : <Edit2 size={13}/>}</button>
+                      {!isViewer && <button onClick={() => setDeleteConfirm(p.id)} style={{ background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: '0.4rem', color: '#f87171', padding: '0.35rem 0.6rem', cursor: 'pointer' }}><Trash2 size={13}/></button>}
                     </div>
                   </td>
                 </tr>

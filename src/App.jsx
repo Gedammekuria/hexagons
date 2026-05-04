@@ -11,6 +11,7 @@ import BlogDetail from './pages/BlogDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Clients from './pages/Clients';
+import Certificates from './pages/Certificates';
 import Admin from './pages/admin/Admin';
 import ScrollToTop from './components/ScrollToTop';
 import FloatingActions from './components/FloatingActions';
@@ -48,6 +49,7 @@ function App() {
           <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
           <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
           <Route path="/clients" element={<PublicLayout><Clients /></PublicLayout>} />
+          <Route path="/certificates" element={<PublicLayout><Certificates /></PublicLayout>} />
           {/* Catch-all route to handle 404s or deep links */}
           <Route path="*" element={<PublicLayout><Home /></PublicLayout>} />
         </Routes>

@@ -45,6 +45,11 @@ export async function initSchema() {
       -- Ensure columns exist if table was already there
       ALTER TABLE admins ADD COLUMN IF NOT EXISTS reset_pin TEXT;
       ALTER TABLE admins ADD COLUMN IF NOT EXISTS reset_expiry TIMESTAMP;
+      ALTER TABLE admins ADD COLUMN IF NOT EXISTS token_version INTEGER DEFAULT 0;
+      ALTER TABLE admins ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'admin';
+      ALTER TABLE admins ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN DEFAULT FALSE;
+      ALTER TABLE admins ADD COLUMN IF NOT EXISTS is_super BOOLEAN DEFAULT FALSE;
+      ALTER TABLE admins ADD COLUMN IF NOT EXISTS password_expiry TIMESTAMP;
 
       CREATE TABLE IF NOT EXISTS inquiries (
         id            SERIAL PRIMARY KEY,
@@ -147,6 +152,40 @@ export async function initSchema() {
         features    TEXT DEFAULT '[]', -- JSON string
         sort_order  INTEGER DEFAULT 0,
         active      INTEGER DEFAULT 1,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS certificates (
+        id          SERIAL PRIMARY KEY,
+        title       TEXT NOT NULL,
+        image       TEXT NOT NULL,
+        description TEXT,
+        sort_order  INTEGER DEFAULT 0,
+        active      INTEGER DEFAULT 1,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_by  TEXT,
+        updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // --- Schema Tracking Migration ---
+    const tables = ['blog_posts', 'team_members', 'projects', 'brands', 'clients', 'services', 'content'];
+    for (const t of tables) {
+      await client.query(`ALTER TABLE ${t} ADD COLUMN IF NOT EXISTS updated_by TEXT`);
+      await client.query(`ALTER TABLE ${t} ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
+    }
+    // Inquiries only needs updated_by (it already has status/timestamps)
+    await client.query(`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS updated_by TEXT`);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS admin_logs (
+        id          SERIAL PRIMARY KEY,
+        admin_id    INTEGER REFERENCES admins(id),
+        email       TEXT NOT NULL,
+        action      TEXT NOT NULL,
+        ip_address  TEXT,
+        user_agent  TEXT,
+        location    TEXT,
         created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -279,7 +318,7 @@ export async function initSchema() {
       const email = process.env.ADMIN_EMAIL || 'gedu0194@gmail.com';
       const password = process.env.ADMIN_PASSWORD || 'Admin@Hexagon2024';
       const hashed = bcrypt.hashSync(password, 10);
-      await client.query("INSERT INTO admins (email, password) VALUES ($1, $2)", [email, hashed]);
+      await client.query("INSERT INTO admins (email, password, must_change_password, is_super) VALUES ($1, $2, TRUE, TRUE)", [email, hashed]);
       console.log('✅ Default admin account created:', email);
     }
 
