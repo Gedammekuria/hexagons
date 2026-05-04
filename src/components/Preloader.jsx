@@ -41,7 +41,7 @@ const Preloader = () => {
         
         <div className="preloader-text">
           <p className="welcome-text">WELCOME TO</p>
-          <h1 className="brand-name" style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+          <h1 className="brand-name" style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span className="hexagon-text" style={{ color: 'var(--primary)', WebkitTextFillColor: 'initial' }}>{firstWord}</span>
             <span className="systems-text">{restOfName}</span>
           </h1>

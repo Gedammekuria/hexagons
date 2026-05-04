@@ -596,14 +596,16 @@ ul {
     top: 0;
     right: -100%;
     height: 100vh;
+    height: 100dvh;
     width: 100%;
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(20px);
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    padding: 2rem;
+    padding: 6rem 2rem 4rem;
     transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
   }
 
   .nav-links.open {
@@ -618,6 +620,59 @@ ul {
   .mobile-toggle {
     display: block;
     z-index: 1001;
+  }
+
+  /* Mobile Dropdown Fixes */
+  .nav-item-wrapper.has-dropdown {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dropdown-menu.mega-menu {
+    position: static;
+    transform: none;
+    width: 100%;
+    min-width: 100%;
+    opacity: 1;
+    visibility: visible;
+    display: none;
+    margin-top: 0.5rem;
+    box-shadow: none;
+    border: none;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 0 0 0 1rem;
+  }
+
+  .dropdown-menu.mega-menu.show-mobile {
+    display: block;
+  }
+
+  .dropdown-arrow.rotated {
+    transform: rotate(180deg);
+  }
+
+  .nav-link-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .mega-item {
+    padding: 0.75rem 0;
+  }
+
+  .mega-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .nav-item-wrapper:hover .dropdown-menu {
+    display: none;
+  }
+  
+  .nav-item-wrapper.mobile-expanded .dropdown-menu {
+    display: block !important;
   }
 }
 
@@ -3446,12 +3501,16 @@ textarea:focus {
 /* Preloader Styles */
 .preloader-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
   background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 99999;
   transition: opacity 0.8s ease, visibility 0.8s ease;
 }
 
@@ -3532,6 +3591,29 @@ textarea:focus {
   font-size: 2.2rem;
   font-weight: 800;
   letter-spacing: 1px;
+}
+
+@media (max-width: 640px) {
+  .preloader-content {
+    width: 100%;
+    padding: 0 1.5rem;
+    gap: 1.5rem;
+  }
+  .preloader-visual {
+    width: 140px;
+    height: 140px;
+  }
+  .preloader-logo-box {
+    width: 90px;
+    height: 90px;
+  }
+  .brand-name {
+    font-size: 1.6rem;
+  }
+  .welcome-text {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+  }
 }
 
 .hexagon-text { color: #000000 !important; }

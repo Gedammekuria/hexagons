@@ -5,6 +5,7 @@ import { Menu, X, Hexagon, ChevronDown, ShieldCheck, Network, Lock, Server, Pale
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileDropdown, setMobileDropdown] = useState(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -47,18 +48,33 @@ const Navbar = () => {
 
           <div className={`nav-links ${isOpen ? 'open' : ''}`}>
             {navLinks.map((link) => (
-              <div key={link.name} className={`nav-item-wrapper ${link.dropdown ? 'has-dropdown' : ''}`}>
-                <Link
-                  to={link.path}
-                  className={`nav-link ${location.pathname === link.path ? 'active' : ''}`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.name}
-                  {link.dropdown && <ChevronDown size={14} className="dropdown-arrow" />}
-                </Link>
+              <div key={link.name} className={`nav-item-wrapper ${link.dropdown ? 'has-dropdown' : ''} ${mobileDropdown === link.name ? 'mobile-expanded' : ''}`}>
+                <div className="nav-link-container" style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                  <Link
+                    to={link.path}
+                    className={`nav-link ${location.pathname.startsWith(link.path) ? 'active' : ''}`}
+                    style={{ flex: 1 }}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                  {link.dropdown && (
+                    <button 
+                      className="dropdown-toggle-btn" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setMobileDropdown(mobileDropdown === link.name ? null : link.name);
+                      }}
+                      style={{ padding: '0.5rem', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}
+                    >
+                      <ChevronDown size={20} className={`dropdown-arrow ${mobileDropdown === link.name ? 'rotated' : ''}`} />
+                    </button>
+                  )}
+                </div>
                 
                 {link.dropdown && (
-                  <div className="dropdown-menu mega-menu glass-card">
+                  <div className={`dropdown-menu mega-menu glass-card ${mobileDropdown === link.name ? 'show-mobile' : ''}`}>
                     {link.dropdown.map((subItem) => {
                       const Icon = subItem.icon;
                       return (
@@ -66,7 +82,10 @@ const Navbar = () => {
                           key={subItem.name}
                           to={subItem.path}
                           className="dropdown-item mega-item"
-                          onClick={() => setIsOpen(false)}
+                          onClick={() => {
+                            setIsOpen(false);
+                            setMobileDropdown(null);
+                          }}
                         >
                           {Icon && (
                             <div className="mega-icon">

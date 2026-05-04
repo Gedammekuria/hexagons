@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
     }
     
     if (conds.length) sql += ' WHERE ' + conds.join(' AND ');
-    sql += ' ORDER BY created_at DESC';
+    sql += ' ORDER BY id DESC';
 
     const countRes = await db.query(`SELECT COUNT(*) FROM (${sql}) as total_count`, params);
     const total = parseInt(countRes.rows[0].count);

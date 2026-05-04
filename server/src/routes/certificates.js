@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
     if (!isAdmin) {
       sql += ' WHERE active = 1';
     }
-    sql += ' ORDER BY sort_order ASC, created_at DESC';
+    sql += ' ORDER BY id DESC';
     
     const result = await db.query(sql);
     res.json(result.rows);

@@ -9,7 +9,7 @@ const router = Router();
 router.get('/', async (req, res) => {
   try {
     const db = getDb();
-    const result = await db.query('SELECT * FROM projects ORDER BY created_at DESC');
+    const result = await db.query('SELECT * FROM projects ORDER BY id DESC');
     res.json(result.rows.map(p => ({ ...p, tags: JSON.parse(p.tags || '[]') })));
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
