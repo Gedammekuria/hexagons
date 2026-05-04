@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getCertificates } from '../api/client';
 import { Award, ZoomIn, X, FileText } from 'lucide-react';
 
-const Certificates = () => {
+const Recommendations = () => {
   const [certs, setCerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -27,10 +27,10 @@ const Certificates = () => {
           <div style={{ display: 'inline-flex', padding: '0.75rem', background: 'rgba(0,179,122,0.1)', borderRadius: '1rem', color: '#00b37a', marginBottom: '1.5rem' }}>
             <Award size={32} />
           </div>
-          <h1 style={{ fontSize: '3rem', fontWeight: 800, margin: '0 0 1rem' }}>Our Certifications</h1>
+          <h1 style={{ fontSize: '3rem', fontWeight: 800, margin: '0 0 1rem' }}>Our Recommendations</h1>
           <p style={{ color: '#94a3b8', fontSize: '1.2rem', lineHeight: 1.6 }}>
             Hexagon is committed to maintaining the highest standards of quality and excellence. 
-            Below are our official certifications and professional credentials.
+            Below are our official recommendations and professional credentials.
           </p>
         </div>
       </section>
@@ -127,4 +127,4 @@ const Certificates = () => {
   );
 };
 
-export default Certificates;
+export default Recommendations;

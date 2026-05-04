@@ -273,11 +273,16 @@ ul {
 
 .partners-section {
   padding-top: 3rem;
-  padding-bottom: 3rem !important;
+  padding-bottom: 1rem !important;
 }
 
 .home-services-section {
-  padding-top: 4rem !important;
+  padding-top: 1rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+.featured-projects-section {
+  padding-top: 0.5rem !important;
 }
 
 /* Top Bar */
@@ -1181,7 +1186,7 @@ ul {
 
 /* Services Continued */
 .page-header {
-  padding: 2rem 0 1rem; /* Reduced top padding from 4rem to 2rem */
+  padding: 1rem 0 1rem; /* Reduced top padding from 2rem to 1rem */
   max-width: 800px;
 }
 
@@ -1683,7 +1688,7 @@ ul {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Clients */

@@ -287,20 +287,19 @@ const About = () => {
           </div>
           <div className="about-video-space glass-card animate-fade-in" style={{ padding: 0 }}>
             <div className="video-placeholder responsive-video-box" onClick={toggleVideo} style={{ cursor: 'pointer', position: 'relative' }}>
-              <div className={`video-overlay ${isPlaying ? 'playing' : ''}`} style={{ zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {!isPlaying && (
-                  <div className="play-pulse-container" style={{ pointerEvents: 'none' }}>
+              <div className={`video-overlay ${isPlaying ? 'playing' : ''}`} style={{ zIndex: 10 }}>
+                {!isPlaying ? (
+                  <div className="play-pulse-container">
                     <div className="play-pulse"></div>
-                    <button className="video-play-btn large">
-                      <Play size={32} fill="currentColor" />
-                    </button>
+                    <div className="video-play-btn large" style={{ background: 'var(--primary)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 10px 30px rgba(37, 99, 235, 0.5)' }}>
+                      <Play size={40} fill="currentColor" />
+                    </div>
                   </div>
-                )}
-                {isPlaying && (
-                  <div style={{ position: 'absolute', bottom: '1.5rem', right: '1.5rem', pointerEvents: 'none' }}>
-                    <button className="video-play-btn mini" style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Pause size={24} />
-                    </button>
+                ) : (
+                  <div className="pause-icon-center" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                    <div className="video-play-btn large" style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}>
+                      <Pause size={40} fill="currentColor" />
+                    </div>
                   </div>
                 )}
               </div>
