@@ -11,6 +11,14 @@ Welcome to the Hexagon Computer Systems repository. This project consists of a d
 - **AI Integration**: Google Gemini API (powering the intelligent customer assistant).
 - **Deployment**: Configured for Vercel.
 
+## ✨ Key Features & UX Optimizations
+
+- **Mobile-First Navigation**: Optimized hamburger menu with toggleable multi-level dropdowns for services, specifically designed for touch interaction.
+- **Intelligent Sorting**: All dynamic content (Blogs, Projects, Recommendations) is automatically sorted to show the latest entries at the top of the frontend.
+- **Modern Preloader**: A responsive, centered splash screen using dynamic viewport units (`dvh`) for consistent presentation across all mobile browsers.
+- **Rich Media**: Integrated Cloudinary for high-performance image delivery and a custom video player with interactive controls.
+- **Real-time Admin Tracking**: Instant UI updates for inquiry completion and status changes.
+
 ## 📁 Project Structure
 
 ```text
@@ -31,7 +39,7 @@ Welcome to the Hexagon Computer Systems repository. This project consists of a d
 ## 🛠️ Getting Started Locally
 
 1. **Install Dependencies**
-   Run the following command in the root directory to install both frontend and backend dependencies (using the `render-build` script as a shortcut, or manually):
+   Run the following command in the root directory to install both frontend and backend dependencies:
    ```bash
    npm install
    cd server && npm install
@@ -52,7 +60,7 @@ Welcome to the Hexagon Computer Systems repository. This project consists of a d
    ```bash
    npm run dev
    ```
-   The frontend will typically run on `http://localhost:5173` and the backend API on `http://localhost:5000` (or as configured).
+   The frontend will typically run on `http://localhost:5173` and the backend API on `http://localhost:5000`.
 
 ## 🚢 Deployment
 

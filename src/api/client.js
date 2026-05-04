@@ -35,6 +35,8 @@ export const forgotPassword = (email) => request('POST', '/auth/forgot-password'
 export const verifyPin     = (email, pin) => request('POST', '/auth/verify-pin', { email, pin });
 export const resetPassword  = (email, pin, newPassword) => request('POST', '/auth/reset-password', { email, pin, newPassword });
 export const getAdminLogs   = (token) => request('GET', '/auth/logs', null, token);
+export const deleteLog      = (token, id) => request('DELETE', `/auth/logs/${id}`, null, token);
+export const clearLogs      = (token) => request('DELETE', '/auth/logs', null, token);
 export const terminateUser  = (token, email) => request('POST', '/auth/terminate', { email }, token);
 
 // ── Admin — Inquiries ──────────────────────────────────────────────────────

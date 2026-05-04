@@ -191,6 +191,25 @@ router.get('/logs', authMiddleware, requireSuperAdmin, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// DELETE /api/auth/logs/:id — delete single log (superadmin)
+router.delete('/logs/:id', authMiddleware, requireSuperAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    const result = await db.query('DELETE FROM admin_logs WHERE id = $1', [req.params.id]);
+    if (result.rowCount === 0) return res.status(404).json({ message: 'Log entry not found.' });
+    res.json({ message: 'Log entry deleted.' });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// DELETE /api/auth/logs — clear all logs (superadmin)
+router.delete('/logs', authMiddleware, requireSuperAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    await db.query('DELETE FROM admin_logs');
+    res.json({ message: 'All security logs cleared.' });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 // POST /api/auth/terminate
 router.post('/terminate', authMiddleware, requireSuperAdmin, async (req, res) => {
   try {

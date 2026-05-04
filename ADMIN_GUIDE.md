@@ -15,13 +15,20 @@ The **Services** tab allows you to manage the core offerings displayed on the we
 - **Rich Content**: You can add and edit primary services and sub-services.
 - **Key Highlights**: Manage interactive "Key Highlights" lists dynamically without needing manual code changes. Ensure these are fully populated to provide a rich user experience.
 
-### 2. Projects & Clients
-- Track and display your portfolio. You can manage project lifecycles, add new client case studies, and upload relevant imagery.
+### 2. Projects & Recommendations
+- **Portfolio**: Manage your project lifecycles and upload relevant imagery.
+- **Recommendations**: Formerly "Certificates", this section is now dedicated to official company credentials and professional recommendations.
+- **Auto-Sorting**: New entries in both Projects and Recommendations are automatically sorted to appear at the **top** of the frontend grid.
 
 ### 3. Blog Publishing
-- Create, edit, and publish blog posts to drive SEO and user engagement. Drafts can be saved before finalizing publication.
+- Create, edit, and publish blog posts to drive SEO and user engagement.
+- **Latest First**: The blog system is optimized to show the most recently created or updated posts at the top of the "Our Insights" list automatically.
 
-### 4. Site Settings
+### 4. Inquiry Tracking
+- The **Inquiries** panel allows you to manage client requests.
+- **Real-time Completion**: When an inquiry status is updated to "Finished", the system automatically captures and displays the completion timestamp immediately without requiring a page refresh.
+
+### 5. Site Settings
 - Manage global configurations, contact information, and UI presentation preferences directly from the centered Settings panel.
 
 ## 🖼️ Media Management

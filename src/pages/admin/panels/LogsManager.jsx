@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getAdminLogs, terminateUser } from '../../../api/client';
+import { getAdminLogs, terminateUser, deleteLog, clearLogs } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
-import { Shield, RefreshCw, Clock, Globe, User, Info, Search, ChevronLeft, Mail, Monitor, MapPin, Tag, PowerOff, X } from 'lucide-react';
+import { Shield, RefreshCw, Clock, Globe, User, Info, Search, ChevronLeft, Mail, Monitor, MapPin, Tag, PowerOff, X, Trash2 } from 'lucide-react';
 import Modal from '../../../components/Modal';
 
 const LogsManager = ({ token, admin }) => {
@@ -20,11 +20,35 @@ const LogsManager = ({ token, admin }) => {
     try {
       await terminateUser(token, selectedLog.email);
       toast.success(`Sessions for ${selectedLog.email} terminated successfully.`);
-      load(); // Refresh logs to show the new terminate action
+      load();
     } catch (err) {
       toast.error(err.message || 'Failed to terminate user.');
     } finally {
       setTerminating(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this log entry permanently?')) return;
+    try {
+      await deleteLog(token, id);
+      toast.success('Log entry deleted.');
+      setView('list');
+      setSelectedLog(null);
+      load();
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete log.');
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!window.confirm('CRITICAL: Clear ALL security logs? This action cannot be undone.')) return;
+    try {
+      await clearLogs(token);
+      toast.success('All security logs cleared.');
+      load();
+    } catch (err) {
+      toast.error(err.message || 'Failed to clear logs.');
     }
   };
 
@@ -48,7 +72,8 @@ const LogsManager = ({ token, admin }) => {
     l.email.toLowerCase().includes(search.toLowerCase()) ||
     l.action.toLowerCase().includes(search.toLowerCase()) ||
     (l.location && l.location.toLowerCase().includes(search.toLowerCase())) ||
-    l.ip_address.toLowerCase().includes(search.toLowerCase())
+    l.ip_address.toLowerCase().includes(search.toLowerCase()) ||
+    fmtDate(l.created_at).toLowerCase().includes(search.toLowerCase())
   );
 
   const fmtDate = (d) => new Date(d).toLocaleString('en-ET', { 
@@ -90,7 +115,13 @@ const LogsManager = ({ token, admin }) => {
             </div>
 
             {!isViewer && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb', gap: '1rem' }}>
+                <button 
+                  onClick={() => handleDelete(selectedLog.id)} 
+                  style={{ background: '#f3f4f6', border: '1px solid #e5e7eb', color: '#6b7280', padding: '0.6rem 1.2rem', borderRadius: '0.5rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  <Trash2 size={16}/> Delete Log
+                </button>
                 <button 
                   onClick={handleTerminate} 
                   disabled={terminating}
@@ -110,9 +141,16 @@ const LogsManager = ({ token, admin }) => {
           </h2>
           <p style={{ color: '#64748b', margin: '0.25rem 0 0', fontSize: '0.85rem' }}>Track all administrative login activities and locations.</p>
         </div>
-        <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '0.5rem', color: '#64748b', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''}/> Refresh Logs
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          {admin?.isSuper && logs.length > 0 && (
+            <button onClick={handleClearAll} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '0.5rem', color: '#ef4444', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+              <Trash2 size={14}/> Clear All Logs
+            </button>
+          )}
+          <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '0.5rem', color: '#64748b', padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''}/> Refresh Logs
+          </button>
+        </div>
       </div>
 
       <div style={{ position: 'relative' }}>
